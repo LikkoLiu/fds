@@ -1,0 +1,11 @@
+menu "Example Configuration"
+
+    menu "POWER Control"
+        config GPIO_LED_SYSRUN
+            int "SYS RUN LED GPIO Num"
+            default 11
+            help
+                system normal running led control.
+    endmenu
+
+endmenu
