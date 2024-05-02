@@ -17,5 +17,10 @@
 **Implement**： No  
 
 2. SysRunningLedTask 堆栈深度必须大于 512 ，否则会造成 " A stack overflow in task SysRunningLedTa has been detected "  
-**Implement**： No   
-                猜测是 HAL 库的调用太深
+**Implement**： No  -   猜测是 HAL 库的调用太深
+
+3. git 配置 github 远程仓库存在 " undenide " 问题   
+**Implement**： remote 配置将 http 改为 git 形式 
+
+4. 配置 timer.h 文件时，出现 " fatal error: esp_timer.h: No such file or directory "    
+**Implement**： 顶层 cmakelists 中 idf_component_register 加入 PRIV_REQUIRES driver esp_timer 

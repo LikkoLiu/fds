@@ -6,6 +6,62 @@ menu "Example Configuration"
             default 11
             help
                 system normal running led control.
+
+    endmenu
+
+    menu "I2C IMU"
+
+        orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+        
+        config I2C_IMU_SCL
+            int "SCL GPIO Num"
+            range ENV_GPIO_RANGE_MIN ENV_GPIO_OUT_RANGE_MAX
+            default 8
+            help
+                GPIO number for I2C IMU clock line.
+
+        config I2C_IMU_SDA
+            int "SDA GPIO Num"
+            default 9
+            help
+                GPIO number for I2C IMU data line.
+
+        config I2C_IMU_PORT_NUM
+            int "Port Number"
+            default 0
+            help
+                Port number for I2C IMU device.
+
+        config I2C_IMU_FREQUENCY
+            int "IMU Frequency"
+            default 100000
+            help
+                I2C Speed of IMU device.
+    endmenu
+
+    menu "BMI160 Sensor"
+        choice IMU_ADDR
+            prompt "BMI160 I2C Address"
+            default BMI160_I2C_ADDRESS_LOW
+            help
+                Hardware address of BMI160, which is 2 types, and determined by ADDR terminal.
+
+            config BMI160_I2C_ADDRESS_LOW
+                bool "BMI160 I2C Address(ADDR=0)"
+                help
+                    I2C Address of BMI160 Sensor according to your schemetic configuration.
+
+            config BMI160_I2C_ADDRESS_High
+                bool "BMI160 I2C Address(ADDR=1)"
+                help
+                    I2C Address of BMI160 Sensor according to your schemetic configuration.
+        endchoice
+
+        config IMU_ADDR
+            hex
+            default 0x68 if BMI160_I2C_ADDRESS_High
+            default 0x69 if BMI160_I2C_ADDRESS_LOW
+
     endmenu
 
 endmenu

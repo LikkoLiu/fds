@@ -30,6 +30,9 @@ void app_main(void)
 
     printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
 
-    SysRunningLedInit();
-    xTaskCreate(SysRunningLedTask, "SysRunningLedTask", 1024, NULL, 10, NULL);
+    ESP_ERROR_CHECK(SysRunningLedInit());
+    ESP_ERROR_CHECK(I2cImuInit());
+
+    xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 10, NULL);
+    xTaskCreate(&ImuTask, "IMU", 1024 * 10, NULL, 5, NULL);
 }
