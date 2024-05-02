@@ -189,6 +189,9 @@ void ImuTask(void *pvParameters)
 
     double last_time_ = TimeToSec();
 
+    // Madgwick 算法初始化
+    MadgwickInit();
+
     for (uint8_t elasped = 0;; elasped++)
     {
         struct bmi160_sensor_data accel;
@@ -199,12 +202,7 @@ void ImuTask(void *pvParameters)
             ESP_LOGE(I2C_IMU_TAG, "BMI160 get_sensor_data fail %d", ret);
             vTaskDelete(NULL);
         }
-        ESP_LOGI(I2C_IMU_TAG, "accel=%d %d %d gyro=%d %d %d", accel.x, accel.y, accel.z, gyro.x, gyro.y, gyro.z);
-
-        // Get the elapsed time from the previous
-        float dt = (TimeToSec() - last_time_);
-        ESP_LOGI(I2C_IMU_TAG, "dt=%f", dt);
-        last_time_ = TimeToSec();
+        ESP_LOGD(I2C_IMU_TAG, "accel=%d %d %d gyro=%d %d %d", accel.x, accel.y, accel.z, gyro.x, gyro.y, gyro.z);
 
         // Convert relative to absolute
         float ax = (float)accel.x / accel_sensitivity;
@@ -213,8 +211,18 @@ void ImuTask(void *pvParameters)
         float gx = (float)gyro.x / gyro_sensitivity;
         float gy = (float)gyro.y / gyro_sensitivity;
         float gz = (float)gyro.z / gyro_sensitivity;
+        float task_roll = 0.0, task_pitch = 0.0, task_yaw = 0.0;
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        // Get the elapsed time from the previous
+        float dt = (TimeToSec() - last_time_);
+        ESP_LOGD(I2C_IMU_TAG, "dt=%f", dt);
+        last_time_ = TimeToSec();
+        
+        updateIMU(gx, gy, gz, ax, ay, az, dt);
+        eulerAngles(&task_roll, &task_pitch, &task_yaw);
+        ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f", task_roll, task_pitch, task_yaw);
+
+        vTaskDelay(20 / portTICK_PERIOD_MS);
     } // end while
 
     // Never reach here

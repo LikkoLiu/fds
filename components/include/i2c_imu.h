@@ -17,7 +17,7 @@
 
 #include "bmi160.h"
 #include "bmi160_defs.h"
-// #include "MadgwickAHRS.h"
+#include "madgwickFilter.h"
 
 #define I2C_NUM I2C_NUM_0
 // #define __DEBUG__ 1

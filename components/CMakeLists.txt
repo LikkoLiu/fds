@@ -6,7 +6,7 @@ set(component_srcs      "src/i2c_tof.c"
                         "src/uart_gps.c"
                         "src/power_control.c"
                         "src/bmi160.c"
-                        "src/MadgwickAHRS.cpp"
+                        "src/madgwickFilter.c"
 )
 
 idf_component_register(SRCS "${component_srcs}"

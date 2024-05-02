@@ -24,3 +24,7 @@
 
 4. 配置 timer.h 文件时，出现 " fatal error: esp_timer.h: No such file or directory "    
 **Implement**： 顶层 cmakelists 中 idf_component_register 加入 PRIV_REQUIRES driver esp_timer 
+
+5. IMU 算法 yaw 值漂移问题   
+**Implement**： 暂时无法解决，需加入磁力计  
+![alt text](https://img-blog.csdnimg.cn/20210117115154114.png)

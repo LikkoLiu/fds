@@ -24,7 +24,7 @@ void SysRunningLedTask()
     {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         gpio_set_level(GPIO_OUTPUT_IO_LED_SYSRUN, cnt % 2);
-        ESP_LOGI(POWER_CONTROL_TAG, "System running indicator LED(G%d) status toggle", GPIO_OUTPUT_IO_LED_SYSRUN);
+        ESP_LOGD(POWER_CONTROL_TAG, "System running indicator LED(G%d) status toggle", GPIO_OUTPUT_IO_LED_SYSRUN);
     } // end while
 
     // Never reach here
