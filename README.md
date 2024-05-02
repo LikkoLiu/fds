@@ -1,35 +1,21 @@
-| Supported Targets | ESP32 | ESP32-C2 | ESP32-C3 | ESP32-C6 | ESP32-H2 | ESP32-P4 | ESP32-S2 | ESP32-S3 |
-| ----------------- | ----- | -------- | -------- | -------- | -------- | -------- | -------- | -------- |
+# 老年人跌倒检测系统 （FDS）
 
-# _Sample project_
+## 已有功能
+- UART0 代码调试
+- LED 闪烁 task 指示系统运行
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+## 待开发
+- log
+- IMU 六轴参数处理
+- TOF 距离数据处理
+- GPS 定位（室外）
+- tiny-ML 学习模型部署 
+- 蓝牙室内定位  
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+## ISSUES
+1. GPIO 初始化不能放在 task 中进行初始化，否则会造成 " Core  1 panic'ed (LoadProhibited). Exception was unhandled. "   
+**Implement**： No  
 
-
-
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
-
-## Example folder contents
-
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
-
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
-
-Below is short explanation of remaining files in the project folder.
-
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+2. SysRunningLedTask 堆栈深度必须大于 512 ，否则会造成 " A stack overflow in task SysRunningLedTa has been detected "  
+**Implement**： No   
+                猜测是 HAL 库的调用太深
