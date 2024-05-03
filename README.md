@@ -7,6 +7,7 @@
 - TOF 距离数据处理
 
 ## 待开发
+- BLE5.0
 - log 格式规范
 - GPS 定位（室外）
 - tiny-ML 学习模型部署 
@@ -28,3 +29,9 @@
 5. IMU 算法 yaw 值漂移问题   
 **Implement**： 暂时无法解决，需加入磁力计  
 ![alt text](https://img-blog.csdnimg.cn/20210117115154114.png)
+
+6. 在 gps 读取数据，进行字符串查找时，出现     
+" esp32Core  0 register dump:     
+PC      : 0x40057143  PS      : 0x00060930  A0      : 0x82009c89  A1      : 0x3fca5360   0x40057143: strchr in ROM "
+**Implement**： 将 data 、 dest 字符串缓存的命名从全局 改为 在任务函数开始处命名
+

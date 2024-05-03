@@ -12,7 +12,7 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 
-#define I2C_TOF_LOG ESP_LOG_INFO
+#define I2C_TOF_LOG ESP_LOG_WARN
 
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);
