@@ -220,7 +220,7 @@ void ImuTask(void *pvParameters)
         
         updateIMU(gx, gy, gz, ax, ay, az, dt);
         eulerAngles(&task_roll, &task_pitch, &task_yaw);
-        ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f", task_roll, task_pitch, task_yaw);
+        ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
     } // end while
