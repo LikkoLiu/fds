@@ -73,8 +73,32 @@ esp_err_t I2cTofInit(void)
 
 void TofTask(void *pvParameters)
 {
+    VL53L1_Error status = VL53L1_ERROR_NONE;
+    VL53L1_RangingMeasurementData_t rangingData;
+    uint8_t dataReady = 0;
+    uint16_t range;
+
+    VL53L1_StopMeasurement(&dev);
+    VL53L1_SetDistanceMode(&dev, VL53L1_DISTANCEMODE_LONG);
+    VL53L1_SetMeasurementTimingBudgetMicroSeconds(&dev, 25000);
+
     for (;;)
     {
+        VL53L1_StartMeasurement(&dev);
+
+        while (dataReady == 0)
+        {
+            status = VL53L1_GetMeasurementDataReady(&dev, &dataReady);
+            vTaskDelay(pdMS_TO_TICKS(1));
+        }
+
+        status = VL53L1_GetRangingMeasurementData(&dev, &rangingData);
+        range = rangingData.RangeMilliMeter;
+
+        VL53L1_StopMeasurement(&dev);
+        VL53L1_StartMeasurement(&dev);
+
+        ESP_LOGI(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
 
         vTaskDelay(50 / portTICK_PERIOD_MS);
     } // end while
