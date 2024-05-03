@@ -1,14 +1,16 @@
 #include "i2c_imu.h"
 
-static const char *I2C_IMU_TAG = "i2c-imu";
+#define I2C_IMU_TAG "i2c-imu"
 
 // Madgwick madgwick;
 struct bmi160_dev sensor;
 
+static float accel_sensitivity;
+static float gyro_sensitivity;
 /**
  * IMU 依赖的 I2C 外设初始化
  */
-esp_err_t I2cImuInit(void)
+static esp_err_t i2cimudevInit(void)
 {
     esp_log_level_set(I2C_IMU_TAG, I2C_IMU_LOG);
 
@@ -29,7 +31,7 @@ esp_err_t I2cImuInit(void)
     }
     err = i2c_driver_install(i2c_imu_port, conf.mode, I2C_IMU_RX_BUF_DISABLE, I2C_IMU_TX_BUF_DISABLE, 0);
 
-    ESP_LOGI(I2C_IMU_TAG, "%s", (err == ESP_OK) ? "I2C initialized successfully" : "I2C initialized fail");
+    ESP_LOGI(I2C_IMU_TAG, "i2c(num %d) initialized %s", i2c_imu_port, (err == ESP_OK) ? "successfully" : "fail");
     return err;
 }
 
@@ -143,12 +145,8 @@ static double TimeToSec()
     return __time;
 }
 
-void ImuTask(void *pvParameters)
+esp_err_t bmi160Init(void)
 {
-    // Accel & Gyro scale factor
-    static float accel_sensitivity;
-    static float gyro_sensitivity;
-
     sensor.id = IMU_SENSOR_ADDR;
     sensor.intf = BMI160_I2C_INTF;
     sensor.read = user_i2c_read;
@@ -159,9 +157,7 @@ void ImuTask(void *pvParameters)
     if (ret != BMI160_OK)
     {
         ESP_LOGE(I2C_IMU_TAG, "BMI160 initialization fail %d", ret);
-        vTaskDelete(NULL);
     }
-    ESP_LOGI(I2C_IMU_TAG, "BMI160 initialization success !");
     ESP_LOGI(I2C_IMU_TAG, "Chip ID 0x%X", sensor.chip_id);
 
     // Config Accel
@@ -180,13 +176,27 @@ void ImuTask(void *pvParameters)
     gyro_sensitivity = 131.2; // Deg/Sec
 
     ret = bmi160_set_sens_conf(&sensor);
-    if (ret != BMI160_OK)
-    {
-        ESP_LOGE(I2C_IMU_TAG, "BMI160 set_sens_conf fail %d", ret);
-        vTaskDelete(NULL);
-    }
-    ESP_LOGI(I2C_IMU_TAG, "bmi160_set_sens_conf");
+    ESP_LOGI(I2C_IMU_TAG, "bmi160 set_sens_conf %s", (ret == ESP_OK) ? "successfully" : "fail");
 
+    return ret;
+}
+
+esp_err_t I2cImuInit(void)
+{
+    esp_err_t err = ESP_OK;
+    esp_log_level_set(I2C_IMU_TAG, I2C_IMU_LOG);
+    
+    i2cimudevInit();
+
+    err = bmi160Init();
+    ESP_LOGI(I2C_IMU_TAG, "imu initialization %s \r\n", (err == ESP_OK) ? "successfully" : "fail");
+
+    return err;
+}
+
+void ImuTask(void *pvParameters)
+{
+    esp_err_t err = ESP_OK;
     double last_time_ = TimeToSec();
 
     // Madgwick 算法初始化
@@ -196,10 +206,10 @@ void ImuTask(void *pvParameters)
     {
         struct bmi160_sensor_data accel;
         struct bmi160_sensor_data gyro;
-        ret = bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &accel, &gyro, &sensor);
-        if (ret != BMI160_OK)
+        err = bmi160_get_sensor_data((BMI160_ACCEL_SEL | BMI160_GYRO_SEL), &accel, &gyro, &sensor);
+        if (err != BMI160_OK)
         {
-            ESP_LOGE(I2C_IMU_TAG, "BMI160 get_sensor_data fail %d", ret);
+            ESP_LOGE(I2C_IMU_TAG, "BMI160 get_sensor_data fail %d", err);
             vTaskDelete(NULL);
         }
         ESP_LOGD(I2C_IMU_TAG, "accel=%d %d %d gyro=%d %d %d", accel.x, accel.y, accel.z, gyro.x, gyro.y, gyro.z);
@@ -215,7 +225,6 @@ void ImuTask(void *pvParameters)
 
         // Get the elapsed time from the previous
         float dt = (TimeToSec() - last_time_);
-        ESP_LOGD(I2C_IMU_TAG, "dt=%f", dt);
         last_time_ = TimeToSec();
         
         updateIMU(gx, gy, gz, ax, ay, az, dt);

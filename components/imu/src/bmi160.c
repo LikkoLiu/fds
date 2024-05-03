@@ -1472,7 +1472,7 @@ int8_t bmi160_init(struct bmi160_dev *dev)
 
     /* Null-pointer check */
     rslt = null_ptr_check(dev);
-	ESP_LOGI(__FUNCTION__, "null_ptr_check=0x%x", rslt);
+	ESP_LOGI(__FUNCTION__, "null_ptr_check = 0x%x", rslt);
 
     /* Dummy read of 0x7F register to enable SPI Interface
      * if SPI is used */
@@ -1490,7 +1490,7 @@ int8_t bmi160_init(struct bmi160_dev *dev)
         {
             /* Read chip_id */
             rslt = bmi160_get_regs(BMI160_CHIP_ID_ADDR, &dev->chip_id, 1, dev);
-			ESP_LOGI(__FUNCTION__, "bmi160_get_regs=0x%x", rslt);
+			ESP_LOGI(__FUNCTION__, "bmi160_get_regs = 0x%x", rslt);
         }
 
         if ((rslt == BMI160_OK) && (dev->chip_id == BMI160_CHIP_ID))
@@ -1561,20 +1561,20 @@ int8_t bmi160_set_sens_conf(struct bmi160_dev *dev)
     else
     {
         rslt = set_accel_conf(dev);
-		ESP_LOGI(__FUNCTION__, "set_accel_conf=%d", rslt);
+		ESP_LOGI(__FUNCTION__, "set_accel_conf = %d", rslt);
         if (rslt == BMI160_OK)
         {
             rslt = set_gyro_conf(dev);
-			ESP_LOGI(__FUNCTION__, "set_gyro_conf=%d", rslt);
+			ESP_LOGI(__FUNCTION__, "set_gyro_conf = %d", rslt);
             if (rslt == BMI160_OK)
             {
                 /* write power mode for accel and gyro */
                 rslt = bmi160_set_power_mode(dev);
-				ESP_LOGI(__FUNCTION__, "bmi160_set_power_mode=%d", rslt);
+				ESP_LOGI(__FUNCTION__, "bmi160_set_power_mode = %d", rslt);
                 if (rslt == BMI160_OK)
                 {
                     rslt = check_invalid_settg(dev);
-					ESP_LOGI(__FUNCTION__, "check_invalid_settg=%d", rslt);
+					ESP_LOGI(__FUNCTION__, "check_invalid_settg = %d", rslt);
                 }
             }
         }
