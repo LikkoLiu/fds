@@ -32,7 +32,9 @@ void app_main(void)
 
     ESP_ERROR_CHECK(SysRunningLedInit());
     ESP_ERROR_CHECK(I2cImuInit());
+    ESP_ERROR_CHECK(I2cTofInit());
 
     xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 10, NULL);
     xTaskCreate(&ImuTask, "IMU", 1024 * 10, NULL, 5, NULL);
+    xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, NULL);
 }

@@ -1,5 +1,5 @@
 #include "power_control.h"
-static const char *POWER_CONTROL_TAG = "power control";
+static const char *POWER_CONTROL_TAG = "power-control";
 
 esp_err_t SysRunningLedInit()
 {
@@ -14,7 +14,7 @@ esp_err_t SysRunningLedInit()
     };
     esp_err_t err = gpio_config(&io_conf);
 
-    ESP_LOGI(POWER_CONTROL_TAG, "%s", (err == ESP_OK) ? "system running instructor led initialized successfully" : "system running instructor led initialized fail");
+    ESP_LOGI(POWER_CONTROL_TAG, "system running instructor led(G%d) initialized %s\r\n",  GPIO_OUTPUT_IO_LED_SYSRUN, (err == ESP_OK) ? "successfully" : "fail");
     return err;
 }
 
