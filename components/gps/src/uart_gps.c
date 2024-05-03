@@ -47,15 +47,19 @@ void GpsTask(void *arg)
     char *pos2;
 
     gps_data_t gps_data;
+    /* 防止首次复位时，由于不明原因二次复位后，才能正常运行 */
     const int rxBytes = uart_read_bytes(UART_NUM_2, data, RX_BUF_SIZE, 1000 / portTICK_PERIOD_MS);
     while (1)
     {
         bzero(&gps_data, sizeof(gps_data));
+        bzero(&gps_data.lat, sizeof(gps_data.lat));
+        bzero(&gps_data.lon, sizeof(gps_data.lat));
+
         const int rxBytes = uart_read_bytes(UART_NUM_2, data, RX_BUF_SIZE, 1000 / portTICK_PERIOD_MS);
         if (rxBytes > 0)
         {
             data[rxBytes] = 0;
-            ESP_LOGI(UART_GPS_TAG, "Read %d bytes: '%s'", rxBytes, data);
+            ESP_LOGD(UART_GPS_TAG, "Read %d bytes: '%s'", rxBytes, data);
 
             // 取经纬度
             row = strstr(data, "$GNGGA");
@@ -66,23 +70,16 @@ void GpsTask(void *arg)
             pos2 = strchr(pos1 + 1, ',');                   // 经度...
             pos1 = strchr(pos2 + 1, ',');                   // 经度方向...
             cut_substr(gps_data.lon, pos2, 1, pos1 - pos2); // 经度
-            printf("lat=%s lon=%s\n", gps_data.lat, gps_data.lon);
 
-            // // 取时间日期
-            // // row = strstr(test_data, "$GNZDA"); // 测试
-            // row = strstr(data, "$GNZDA");
-            // // printf("row=%s\n", row); // ZDA
-            // pos1 = strchr(row, ',');                        // UTC时间...
-            // pos2 = strchr(pos1 + 1, ',');                   // 日...
-            // cut_substr(gps_data.utc, pos1, 1, pos2 - pos1); // UTC时间
-            // // printf("utc=%s\n", gps_data.utc);
-            // pos1 = strchr(pos2 + 1, ',');                     // 月...
-            // cut_substr(gps_data.day, pos2, 1, pos1 - pos2);   // 日
-            // pos2 = strchr(pos1 + 1, ',');                     // 年...
-            // cut_substr(gps_data.month, pos1, 1, pos2 - pos1); // 月
-            // pos1 = strchr(pos2 + 1, ',');                     // 本时区小时...
-            // cut_substr(gps_data.year, pos2, 1, pos1 - pos2);  // 年
-            // printf("utc=%s day=%s month=%s year=%s\n", gps_data.utc, gps_data.day, gps_data.month, gps_data.year);
+            if ((gps_data.lat[0] == ',')||(gps_data.lon[0] == ','))
+            {
+                ESP_LOGI(UART_GPS_TAG, "failed to obtain GPS data");
+            }
+            else
+            {
+                ESP_LOGI(UART_GPS_TAG, "lat=%s lon=%s", gps_data.lat, gps_data.lon);
+            }
+
         }
     }
 
