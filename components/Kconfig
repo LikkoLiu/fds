@@ -3,7 +3,7 @@ menu "Example Configuration"
     menu "POWER Control"
         config GPIO_LED_SYSRUN
             int "SYS RUN LED GPIO Num"
-            default 11
+            default 38
             help
                 system normal running led control.
 
