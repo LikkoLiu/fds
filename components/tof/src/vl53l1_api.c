@@ -841,7 +841,7 @@ VL53L1_Error VL53L1_WaitDeviceBooted(VL53L1_DEV Dev)
 {
 	VL53L1_Error Status = VL53L1_ERROR_NONE;
 
-	LOG_FUNCTION_START("");
+	LOG_FUNCTION_START("...");
 
 	Status = VL53L1_poll_for_boot_completion(Dev,
 			VL53L1_BOOT_COMPLETION_POLLING_TIMEOUT_MS);

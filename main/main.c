@@ -30,7 +30,7 @@ void app_main(void)
 
     printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
 
-    // ESP_ERROR_CHECK(SysRunningLedInit());
+    ESP_ERROR_CHECK(SysRunningLedInit());
     ESP_ERROR_CHECK(I2cImuInit());
     ESP_ERROR_CHECK(I2cTofInit());
     ESP_ERROR_CHECK(uartgpsdevInit());

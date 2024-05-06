@@ -34,7 +34,7 @@ static esp_err_t vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
     VL53L1_RdWord(pdev, 0x010F, &wordData);
     ESP_LOGI(I2C_TOF_TAG, "VL53L3CX = 0x%02x", wordData);
 
-    status = VL53L1_WaitDeviceBooted(pdev);
+    // status = VL53L1_WaitDeviceBooted(pdev);
     if (status != VL53L1_ERROR_NONE)
     {
         ESP_LOGE(I2C_TOF_TAG, "VL53L3CX wait device booted fail");
