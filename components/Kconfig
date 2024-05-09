@@ -7,6 +7,12 @@ menu "Example Configuration"
             help
                 system normal running led control.
 
+        config GPIO_GPS_POWER
+            int "GPS POWER ENABLE GPIO Num"
+            default 2
+            help
+                gps power control.
+
     endmenu
 
     menu "I2C IMU"
