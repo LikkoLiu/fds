@@ -1,5 +1,5 @@
 #ifndef __POWER_CONTROL_H_
-#define	__POWER_CONTROL_H_
+#define __POWER_CONTROL_H_
 
 #include <stdio.h>
 #include <string.h>
@@ -10,12 +10,16 @@
 #include "esp_log.h"
 #include "driver/gpio.h"
 
-#define GPIO_OUTPUT_IO_LED_SYSRUN    CONFIG_GPIO_LED_SYSRUN
-#define SYSRUN_LED_PIN_SEL  (1ULL<<GPIO_OUTPUT_IO_LED_SYSRUN)
+#define GPIO_OUTPUT_IO_LED_SYSRUN CONFIG_GPIO_LED_SYSRUN
+#define SYSRUN_LED_PIN_SEL (1ULL << GPIO_OUTPUT_IO_LED_SYSRUN)
+#define GPIO_OUTPUT_IO_GPS_POWER CONFIG_GPIO_GPS_POWER
+#define GPS_POWER_PIN_SEL (1ULL << GPIO_OUTPUT_IO_GPS_POWER)
+#define GPIO_OUTPUT_IO_TOF_POWER CONFIG_GPIO_TOF_POWER
+#define TOF_POWER_PIN_SEL (1ULL << GPIO_OUTPUT_IO_TOF_POWER)
 
 #define POWER_CONTROL_LOG ESP_LOG_INFO
 
-esp_err_t  SysRunningLedInit();
+esp_err_t SysRunningLedInit();
 void SysRunningLedTask();
 
 #endif

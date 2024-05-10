@@ -11,6 +11,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
+#include "power_control.h"
 
 #define I2C_TOF_LOG ESP_LOG_INFO
 

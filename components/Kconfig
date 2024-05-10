@@ -1,4 +1,4 @@
-menu "Example Configuration"
+menu "FDS Configuration"
 
     menu "POWER Control"
         config GPIO_LED_SYSRUN
@@ -6,6 +6,18 @@ menu "Example Configuration"
             default 38
             help
                 system normal running led control.
+
+        config GPIO_GPS_POWER
+            int "GPS POWER ENABLE GPIO Num"
+            default 2
+            help
+                gps power control.
+
+        config GPIO_TOF_POWER
+            int "TOF POWER ENABLE GPIO Num"
+            default 2
+            help
+                tof power control.
 
     endmenu
 
@@ -61,6 +73,18 @@ menu "Example Configuration"
             hex
             default 0x68 if BMI160_I2C_ADDRESS_High
             default 0x69 if BMI160_I2C_ADDRESS_LOW
+
+    endmenu
+
+    menu "AUTO PM"
+        config MAX_CPU_FREQ_MHZ
+            int "MAX_CPU_FREQ_MHZ"
+            default 80
+
+
+        config MIN_CPU_FREQ_MHZ
+            int "MAX_CPU_FREQ_MHZ"
+            default 40
 
     endmenu
 
