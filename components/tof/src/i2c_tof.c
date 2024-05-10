@@ -100,7 +100,7 @@ void TofTask(void *pvParameters)
 
         ESP_LOGI(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
 
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     } // end while
 
     // Never reach here

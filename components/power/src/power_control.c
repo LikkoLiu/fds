@@ -22,7 +22,18 @@ esp_err_t SysRunningLedInit()
         .pull_up_en = 0,
     };
     err = gpio_config(&io_conf_gps_power);
+
+    gpio_config_t io_conf_tof_power = {
+        .intr_type = GPIO_INTR_DISABLE,
+        .mode = GPIO_MODE_OUTPUT,
+        .pin_bit_mask = TOF_POWER_PIN_SEL,
+        .pull_down_en = 0,
+        .pull_up_en = 0,
+    };
+    err = gpio_config(&io_conf_tof_power);
+
     gpio_set_level(GPIO_OUTPUT_IO_GPS_POWER, 0);
+    gpio_set_level(GPIO_OUTPUT_IO_TOF_POWER, 0);
 
     ESP_LOGI(POWER_CONTROL_TAG, "system running instructor led(G%d) initialized %s\r\n",  GPIO_OUTPUT_IO_LED_SYSRUN, (err == ESP_OK) ? "successfully" : "fail");
     return err;

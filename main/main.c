@@ -2,8 +2,6 @@
 
 void app_main(void)
 {
-    printf("Hello world!\n");
-
     /* Print chip information */
     esp_chip_info_t chip_info;
     uint32_t flash_size;
@@ -30,13 +28,20 @@ void app_main(void)
 
     printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
 
-    ESP_ERROR_CHECK(SysRunningLedInit());
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = CONFIG_MAX_CPU_FREQ_MHZ,
+        .min_freq_mhz = CONFIG_MIN_CPU_FREQ_MHZ,
+        .light_sleep_enable = false};
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+
+    ESP_ERROR_CHECK(SysRunningLedInit()); /* 初始化 power 控制引脚状态 */
     ESP_ERROR_CHECK(I2cImuInit());
     ESP_ERROR_CHECK(I2cTofInit());
-    ESP_ERROR_CHECK(uartgpsdevInit());
+    // ESP_ERROR_CHECK(uartgpsdevInit());
+    ESP_ERROR_CHECK(vBtInit());
 
     xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 10, NULL);
     xTaskCreate(&ImuTask, "IMU", 1024 * 10, NULL, 5, NULL);
     xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, NULL);
-    xTaskCreate(&GpsTask, "GPS", 1024 * 10, NULL, 7, NULL);
+    // xTaskCreate(&GpsTask, "GPS", 1024 * 10, NULL, 7, NULL);
 }
