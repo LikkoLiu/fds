@@ -75,8 +75,8 @@ static esp_ble_adv_data_t scan_rsp_data = {
 #endif /* CONFIG_SET_RAW_ADV_DATA */
 
 static esp_ble_adv_params_t adv_params = {
-    .adv_int_min         = 0x20,
-    .adv_int_max         = 0x40,
+    .adv_int_min         = 0x0800,
+    .adv_int_max         = 0x0F00,
     .adv_type            = ADV_TYPE_IND,
     .own_addr_type       = BLE_ADDR_TYPE_PUBLIC,
     .channel_map         = ADV_CHNL_ALL,
