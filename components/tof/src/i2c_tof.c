@@ -1,6 +1,7 @@
 #include "i2c_tof.h"
 
 #define I2C_TOF_TAG "i2c-tof"
+uint16_t *pusDistancePtr = NULL;
 
 static const I2cDef I2CConfig = {
     .i2cPort = I2C_NUM_1,
@@ -77,6 +78,7 @@ void TofTask(void *pvParameters)
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
     uint16_t range;
+    pusDistancePtr = &range;
 
     VL53L1_StopMeasurement(&dev);
     VL53L1_SetDistanceMode(&dev, VL53L1_DISTANCEMODE_LONG);

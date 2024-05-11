@@ -15,6 +15,8 @@
 
 #define I2C_TOF_LOG ESP_LOG_INFO
 
+extern uint16_t *pusDistancePtr;
+
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);
 

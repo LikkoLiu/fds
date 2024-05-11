@@ -21,6 +21,8 @@
 
 #include "sdkconfig.h"
 
+#include "i2c_tof.h"
+
 #define GATTS_TAG "GATTS_FDS"
 
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF
@@ -55,7 +57,7 @@ static uint8_t raw_scan_rsp_data[] = {     // Length 15, Data Type 9 (Complete L
 };
 #endif /* CONFIG_SET_RAW_ADV_DATA */
 
-#define PROFILE_NUM 2
+#define PROFILE_NUM 1
 #define PROFILE_A_APP_ID 0
 #define PROFILE_B_APP_ID 1
 
