@@ -41,4 +41,8 @@ PC      : 0x40057143  PS      : 0x00060930  A0      : 0x82009c89  A1      : 0x3f
 ```shell
 I (16429) GATTS_FDS: update connection params status = 0, min_int = 0, max_int = 0,conn_int = 32,latency = 0, timeout = 400
 ```
-**Influence**：蓝牙连接速度变慢
+**Influence**：蓝牙连接速度变慢    
+
+2. 将 SPI Flash 由 DIO 切换为 QIO          
+**res**：蓝牙未连接时，功耗由 24mA 降低为 23mA；但蓝牙连接时，功耗为 27mA    
+**Influence**：暂无   
