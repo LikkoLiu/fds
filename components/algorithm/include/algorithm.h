@@ -16,10 +16,16 @@
 
 #include "esp_dsp.h"
 
-extern float fArrRoll[3000];
-extern float fArrPitch[3000]; 
-extern float fArrYaw[3000];
+#define AIGORITHM_TAG "algorithm"
+#define N_SAMPLES 2048 // Amount of real input samples
+
+extern TaskHandle_t xAlgorithmHandle;
+
+extern float fArrRoll[N_SAMPLES];
+extern float fArrPitch[N_SAMPLES]; 
+extern float fArrYaw[N_SAMPLES];
 extern uint16_t usPtrArrImu;
 
+void AlgorithmTask(void *pvParameters);
 
 #endif

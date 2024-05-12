@@ -35,6 +35,12 @@
 PC      : 0x40057143  PS      : 0x00060930  A0      : 0x82009c89  A1      : 0x3fca5360   0x40057143: strchr in ROM "
 **Implement**： 将 data 、 dest 字符串缓存的命名从全局 改为 在任务函数开始处命名
 
+7. 在初始化 FFT 时，" Not possible to initialize FFT2R INVAILD LENGTH"    
+**Implement**： 将 `N_SAMPLES` 由 3000 更换为 2048
+
+8. TOF 在热熔胶固定后，发生初始化失败问题
+**Implement**： 热吹风吹了下，怀疑虚焊
+
 ## Optimization
 1. 蓝牙 GAP 广播间隔修改 MIN：0x0800(1.28Sec) MAX：0x0F00   
 **res**：蓝牙未连接时，功耗由 35mA 降低为 24mA；但蓝牙连接时，功耗为 28mA 

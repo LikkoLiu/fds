@@ -16,5 +16,6 @@
 #include "i2c_imu.h"
 #include "i2c_tof.h"
 #include "bt.h"
+#include "algorithm.h"
 
 #endif
