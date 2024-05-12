@@ -14,6 +14,7 @@
 #include "power_control.h"
 
 #define I2C_TOF_LOG ESP_LOG_INFO
+#define RANGE_THRESHOLD 500
 
 extern uint16_t *pusDistancePtr;
 

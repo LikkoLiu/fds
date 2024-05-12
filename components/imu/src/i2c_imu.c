@@ -7,6 +7,19 @@ struct bmi160_dev sensor;
 
 static float accel_sensitivity;
 static float gyro_sensitivity;
+
+static void vSaveImuData(float *fDataRoll, float *fDataPitch, float *fDataYaw)
+{
+    fArrRoll[usPtrArrImu] = *fDataRoll;
+    fArrPitch[usPtrArrImu] = *fDataPitch; 
+    fArrYaw[usPtrArrImu] = *fDataYaw;
+
+    usPtrArrImu++;
+    if(3000 == usPtrArrImu)
+    {
+        usPtrArrImu = 0;
+    }
+}
 /**
  * IMU 依赖的 I2C 外设初始化
  */
@@ -199,6 +212,8 @@ void ImuTask(void *pvParameters)
     esp_err_t err = ESP_OK;
     double last_time_ = TimeToSec();
 
+    usPtrArrImu = 0;
+
     // Madgwick 算法初始化
     MadgwickInit();
 
@@ -229,6 +244,7 @@ void ImuTask(void *pvParameters)
         
         updateIMU(gx, gy, gz, ax, ay, az, dt);
         eulerAngles(&task_roll, &task_pitch, &task_yaw);
+        vSaveImuData(&task_roll, &task_pitch, &task_yaw);
         ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
         vTaskDelay(10 / portTICK_PERIOD_MS);

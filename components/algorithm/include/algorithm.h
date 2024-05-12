@@ -16,4 +16,10 @@
 
 #include "esp_dsp.h"
 
+extern float fArrRoll[3000];
+extern float fArrPitch[3000]; 
+extern float fArrYaw[3000];
+extern uint16_t usPtrArrImu;
+
+
 #endif

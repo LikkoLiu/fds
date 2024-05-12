@@ -78,6 +78,7 @@ void TofTask(void *pvParameters)
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
     uint16_t range;
+    uint16_t usPreviousRange = 0;
     pusDistancePtr = &range;
 
     VL53L1_StopMeasurement(&dev);
@@ -99,8 +100,13 @@ void TofTask(void *pvParameters)
 
         VL53L1_StopMeasurement(&dev);
         VL53L1_StartMeasurement(&dev);
-
+        
+        if ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD)))
+        {
+            ESP_LOGI(I2C_TOF_TAG, "Detected sudden change in distance from ground!");
+        }
         ESP_LOGI(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
+        usPreviousRange = range;
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     } // end while
