@@ -2,11 +2,26 @@
 
 #define I2C_IMU_TAG "i2c-imu"
 
+TaskHandle_t xImuHandle = NULL;
+
 // Madgwick madgwick;
 struct bmi160_dev sensor;
 
 static float accel_sensitivity;
 static float gyro_sensitivity;
+
+static void vSaveImuData(float *fDataRoll, float *fDataPitch, float *fDataYaw)
+{
+    fArrRoll[usPtrArrImu] = *fDataRoll;
+    fArrPitch[usPtrArrImu] = *fDataPitch;
+    fArrYaw[usPtrArrImu] = *fDataYaw;
+
+    usPtrArrImu++;
+    if (N_SAMPLES == usPtrArrImu)
+    {
+        usPtrArrImu = 0;
+    }
+}
 /**
  * IMU 依赖的 I2C 外设初始化
  */
@@ -185,7 +200,7 @@ esp_err_t I2cImuInit(void)
 {
     esp_err_t err = ESP_OK;
     esp_log_level_set(I2C_IMU_TAG, I2C_IMU_LOG);
-    
+
     i2cimudevInit();
 
     err = bmi160Init();
@@ -198,6 +213,8 @@ void ImuTask(void *pvParameters)
 {
     esp_err_t err = ESP_OK;
     double last_time_ = TimeToSec();
+
+    usPtrArrImu = 0;
 
     // Madgwick 算法初始化
     MadgwickInit();
@@ -226,12 +243,13 @@ void ImuTask(void *pvParameters)
         // Get the elapsed time from the previous
         float dt = (TimeToSec() - last_time_);
         last_time_ = TimeToSec();
-        
+
         updateIMU(gx, gy, gz, ax, ay, az, dt);
         eulerAngles(&task_roll, &task_pitch, &task_yaw);
+        vSaveImuData(&task_roll, &task_pitch, &task_yaw);
         ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     } // end while
 
     // Never reach here

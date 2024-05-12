@@ -12,8 +12,13 @@
 #include "freertos/task.h"
 #include "esp_system.h"
 #include "power_control.h"
+#include "algorithm.h"
 
 #define I2C_TOF_LOG ESP_LOG_INFO
+#define RANGE_THRESHOLD 500
+
+extern uint16_t *pusDistancePtr;
+extern TaskHandle_t xTofHandle;
 
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);

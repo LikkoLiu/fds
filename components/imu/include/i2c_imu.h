@@ -18,6 +18,7 @@
 #include "bmi160.h"
 #include "bmi160_defs.h"
 #include "madgwickFilter.h"
+#include "algorithm.h"
 
 #define I2C_NUM I2C_NUM_0
 // #define __DEBUG__ 1
@@ -41,7 +42,9 @@
 
 #define IMU_SENSOR_ADDR CONFIG_IMU_ADDR /*!< slave address for IMU sensor */
 
-#define I2C_IMU_LOG ESP_LOG_WARN
+#define I2C_IMU_LOG ESP_LOG_INFO
+
+extern TaskHandle_t xImuHandle;
 
 esp_err_t I2cImuInit(void);
 void ImuTask(void *pvParameters);

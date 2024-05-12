@@ -21,51 +21,43 @@
 
 #include "sdkconfig.h"
 
-#define GATTS_TAG "GATTS_FDS"
+#include "i2c_tof.h"
 
-#define GATTS_SERVICE_UUID_TEST_A   0x00FF
-#define GATTS_CHAR_UUID_TEST_A      0xFF01
-#define GATTS_DESCR_UUID_TEST_A     0x3333
-#define GATTS_NUM_HANDLE_TEST_A     4
+#define GATTS_TABLE_TAG "GATTS_FDS"
 
-#define GATTS_SERVICE_UUID_TEST_B   0x00EE
-#define GATTS_CHAR_UUID_TEST_B      0xEE01
-#define GATTS_DESCR_UUID_TEST_B     0x2222
-#define GATTS_NUM_HANDLE_TEST_B     4
+#define PROFILE_NUM                 1
+#define PROFILE_APP_IDX             0
+#define ESP_APP_ID                  0x55
+#define DEVICE_NAME                 "GATTS_FDS"
+#define SVC_INST_ID                 0
 
-#define DEVICE_NAME            "ESP_GATTS_FDS"
-#define TEST_MANUFACTURER_DATA_LEN  17
+/* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
+*  the data length must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
+*/
+#define GATTS_DEMO_CHAR_VAL_LEN_MAX 500
+#define PREPARE_BUF_MAX_SIZE        1024
+#define CHAR_DECLARATION_SIZE       (sizeof(uint8_t))
 
-#define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40
+#define ADV_CONFIG_FLAG             (1 << 0)
+#define SCAN_RSP_CONFIG_FLAG        (1 << 1)
 
-#define PREPARE_BUF_MAX_SIZE 1024
+/* Attributes State Machine */
+enum
+{
+    IDX_SVC,
+    IDX_CHAR_A,
+    IDX_CHAR_VAL_A,
+    IDX_CHAR_CFG_A,
 
-#define adv_config_flag      (1 << 0)
-#define scan_rsp_config_flag (1 << 1)
+    IDX_CHAR_B,
+    IDX_CHAR_VAL_B,
 
-#ifdef CONFIG_SET_RAW_ADV_DATA
-static uint8_t raw_adv_data[] = {
-        0x02, 0x01, 0x06,                  // Length 2, Data Type 1 (Flags), Data 1 (LE General Discoverable Mode, BR/EDR Not Supported)
-        0x02, 0x0a, 0xeb,                  // Length 2, Data Type 10 (TX power leve), Data 2 (-21)
-        0x03, 0x03, 0xab, 0xcd,            // Length 3, Data Type 3 (Complete 16-bit Service UUIDs), Data 3 (UUID)
+    IDX_CHAR_C,
+    IDX_CHAR_VAL_C,
+
+    HRS_IDX_NB,
 };
-static uint8_t raw_scan_rsp_data[] = {     // Length 15, Data Type 9 (Complete Local Name), Data 1 (ESP_GATTS_DEMO)
-        0x0f, 0x09, 0x45, 0x53, 0x50, 0x5f, 0x47, 0x41, 0x54, 0x54, 0x53, 0x5f, 0x44,
-        0x45, 0x4d, 0x4f
-};
-#endif /* CONFIG_SET_RAW_ADV_DATA */
 
-#define PROFILE_NUM 2
-#define PROFILE_A_APP_ID 0
-#define PROFILE_B_APP_ID 1
-
-typedef struct {
-    uint8_t                 *prepare_buf;
-    int                     prepare_len;
-} prepare_type_env_t;
-
-void example_write_event_env(esp_gatt_if_t gatts_if, prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
-void example_exec_write_event_env(prepare_type_env_t *prepare_write_env, esp_ble_gatts_cb_param_t *param);
 esp_err_t vBtInit();
 
 #endif

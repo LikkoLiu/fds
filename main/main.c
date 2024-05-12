@@ -36,12 +36,16 @@ void app_main(void)
 
     ESP_ERROR_CHECK(SysRunningLedInit()); /* 初始化 power 控制引脚状态 */
     ESP_ERROR_CHECK(I2cImuInit());
-    ESP_ERROR_CHECK(I2cTofInit());
+    // ESP_ERROR_CHECK(I2cTofInit());
+    I2cTofInit();
     // ESP_ERROR_CHECK(uartgpsdevInit());
     ESP_ERROR_CHECK(vBtInit());
 
-    xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 10, NULL);
-    xTaskCreate(&ImuTask, "IMU", 1024 * 10, NULL, 5, NULL);
-    xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, NULL);
+    xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 7, NULL);
+    xTaskCreate(&AlgorithmTask, "Algorithm", 1024 * 40, NULL, 10, &xAlgorithmHandle);
+    
+    vTaskDelay(800 / portTICK_PERIOD_MS);
+    xTaskCreate(&ImuTask, "IMU", 1024 * 15, NULL, 5, &xImuHandle);
+    xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, &xTofHandle);
     // xTaskCreate(&GpsTask, "GPS", 1024 * 10, NULL, 7, NULL);
 }
