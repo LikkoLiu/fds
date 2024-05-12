@@ -2,6 +2,8 @@
 
 #define I2C_IMU_TAG "i2c-imu"
 
+TaskHandle_t xImuHandle = NULL;
+
 // Madgwick madgwick;
 struct bmi160_dev sensor;
 

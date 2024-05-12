@@ -43,8 +43,9 @@ void app_main(void)
 
     xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 7, NULL);
     xTaskCreate(&AlgorithmTask, "Algorithm", 1024 * 40, NULL, 10, &xAlgorithmHandle);
-    vTaskDelay(500 / portTICK_PERIOD_MS);
-    xTaskCreate(&ImuTask, "IMU", 1024 * 15, NULL, 5, NULL);
-    xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, NULL);
+    
+    vTaskDelay(800 / portTICK_PERIOD_MS);
+    xTaskCreate(&ImuTask, "IMU", 1024 * 15, NULL, 5, &xImuHandle);
+    xTaskCreate(&TofTask, "TOF", 1024 * 12, NULL, 6, &xTofHandle);
     // xTaskCreate(&GpsTask, "GPS", 1024 * 10, NULL, 7, NULL);
 }

@@ -2,6 +2,7 @@
 
 #define I2C_TOF_TAG "i2c-tof"
 uint16_t *pusDistancePtr = NULL;
+TaskHandle_t xTofHandle = NULL;
 
 static const I2cDef I2CConfig = {
     .i2cPort = I2C_NUM_1,
@@ -36,25 +37,25 @@ static esp_err_t vl53l1xInit(VL53L1_Dev_t *pdev, I2C_Dev *I2cHandle)
     ESP_LOGI(I2C_TOF_TAG, "VL53L3CX = 0x%02x", wordData);
 
     status = VL53L1_WaitDeviceBooted(pdev);
-    // if (status != VL53L1_ERROR_NONE)
-    // {
-    //     ESP_LOGE(I2C_TOF_TAG, "VL53L3CX wait device booted fail");
-    //     return status;
-    // }
+    if (status != VL53L1_ERROR_NONE)
+    {
+        ESP_LOGE(I2C_TOF_TAG, "VL53L3CX wait device booted fail");
+        return status;
+    }
 
     status = VL53L1_DataInit(pdev);
-    // if (status != VL53L1_ERROR_NONE)
-    // {
-    //     ESP_LOGE(I2C_TOF_TAG, "VL53L3CX data init fail");
-    //     return status;
-    // }
+    if (status != VL53L1_ERROR_NONE)
+    {
+        ESP_LOGE(I2C_TOF_TAG, "VL53L3CX data init fail");
+        return status;
+    }
 
     status = VL53L1_StaticInit(pdev);
-    // if (status != VL53L1_ERROR_NONE)
-    // {
-    //     ESP_LOGE(I2C_TOF_TAG, "VL53L3CX static init fail");
-    //     return status;
-    // }
+    if (status != VL53L1_ERROR_NONE)
+    {
+        ESP_LOGE(I2C_TOF_TAG, "VL53L3CX static init fail");
+        return status;
+    }
 
     return status;
 }
@@ -106,7 +107,7 @@ void TofTask(void *pvParameters)
             ESP_LOGI(I2C_TOF_TAG, "Previous distance: %4d , CurrentmmDetected distance: %4d \nsudden change in distance from ground!", usPreviousRange, range);
             vTaskResume(xAlgorithmHandle);
         }
-        ESP_LOGI(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
+        ESP_LOGD(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
         usPreviousRange = range;
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);

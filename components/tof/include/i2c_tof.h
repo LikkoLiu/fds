@@ -18,6 +18,7 @@
 #define RANGE_THRESHOLD 500
 
 extern uint16_t *pusDistancePtr;
+extern TaskHandle_t xTofHandle;
 
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);

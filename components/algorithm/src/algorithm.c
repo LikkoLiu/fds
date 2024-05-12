@@ -2,9 +2,9 @@
 
 TaskHandle_t xAlgorithmHandle = NULL;
 
-float fArrRoll[N_SAMPLES] = {0};
-float fArrPitch[N_SAMPLES] = {0};
-float fArrYaw[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrRoll[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrPitch[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrYaw[N_SAMPLES] = {0};
 uint16_t usPtrArrImu = 0;
 
 int N = N_SAMPLES;
@@ -51,15 +51,33 @@ void AlgorithmTask(void *pvParameters)
     for (;;)
     {
         ESP_LOGI(AIGORITHM_TAG, "Trigger algorithm detection!");
+
+        vTaskSuspend(xTofHandle);
         vTaskDelay(5000 / portTICK_PERIOD_MS);
+        vTaskSuspend(xImuHandle);
+
         vCopyImuData(usPtrArrImu, &fArrRoll, &fArrPitch, &fArrYaw);
 
-        for (int i = 0; i < N; i++)
-        {
-            fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
-            fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
-            fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
-        }
+        ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
+        dsps_view(fArrRollFFT, N / 2, 128, 20, -180, 180, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        dsps_view(fArrPitchFFT, N / 2, 128, 20, -180, 180, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        dsps_view(fArrYawFFT, N / 2, 128, 20, -180, 180, '.');
+
+        // for (int i = 0; i < N; i++)
+        // {
+        //     fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
+        //     fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
+        //     fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
+        // }
+
+        // ESP_LOGW(AIGORITHM_TAG, "Roll wind");
+        // dsps_view(fArrRollFFT, N / 2, 128, 20, -50, 50, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Pitch wind");
+        // dsps_view(fArrPitchFFT, N / 2, 128, 20, -50, 50, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Yaw wind");
+        // dsps_view(fArrYawFFT, N / 2, 128, 20, -50, 50, '.');
 
         dsps_fft2r_fc32(fArrRollFFT, N >> 1);
         dsps_bit_rev2r_fc32(fArrRollFFT, N >> 1);
@@ -81,12 +99,14 @@ void AlgorithmTask(void *pvParameters)
         }
 
         ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
-        dsps_view(fArrRollFFT, N / 2, 64, 10, -60, 40, '.');
+        dsps_view(fArrRollFFT, N / 2, 128, 20, -50, 100, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch FFT");
-        dsps_view(fArrPitchFFT, N / 2, 64, 10, -60, 40, '.');
+        dsps_view(fArrPitchFFT, N / 2, 128, 20, -50, 40, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
-        dsps_view(fArrYawFFT, N / 2, 64, 10, -60, 40, '.');
+        dsps_view(fArrYawFFT, N / 2, 128, 20, -50, 40, '.');
 
+        vTaskResume(xImuHandle);
+        vTaskResume(xTofHandle);
         vTaskSuspend(NULL);
     } // end while
 
