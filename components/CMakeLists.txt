@@ -23,6 +23,7 @@ set(component_srcs      "power/src/power_control.c"
                         "tof/src/vl53l1_silicon_core.c"
                         "tof/src/vl53l1_wait.c"
                         "bt/src/bt.c"
+                        "algorithm/src/algorithm.c"
 )
 
 idf_component_register(SRCS "${component_srcs}"
@@ -31,7 +32,8 @@ idf_component_register(SRCS "${component_srcs}"
                                     "tof/include"
                                     "gps/include"
                                     "bt/include"
+                                    "algorithm/include"
                        PRIV_INCLUDE_DIRS ""
                        PRIV_REQUIRES "driver"
-                       PRIV_REQUIRES driver esp_timer nvs_flash bt esp_pm
+                       PRIV_REQUIRES driver esp_timer nvs_flash bt esp_pm 
                        REQUIRES "")
