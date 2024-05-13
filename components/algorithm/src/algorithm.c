@@ -1,21 +1,23 @@
 #include "algorithm.h"
 
+portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t xAlgorithmHandle = NULL;
 
-__attribute__((aligned(16))) float fArrRoll[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrPitch[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrYaw[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrRoll[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrPitch[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrYaw[N_SAMPLES + 16] = {0};
 uint16_t usPtrArrImu = 0;
 
 int N = N_SAMPLES;
-__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES];
-__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES];
-__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES];
+__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES + 16] = {0};
 
 __attribute__((aligned(16))) float wind[N_SAMPLES];
 
-void vCopyImuData(uint16_t usCurrentPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
+void vCopyImuData(uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
 {
+    uint16_t usCurrentPtr = usPtr;
     for (uint16_t ucCnt = 0; ucCnt < N_SAMPLES; ucCnt++)
     {
         fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr);
@@ -33,80 +35,96 @@ void vCopyImuData(uint16_t usCurrentPtr, float *pfArrRoll, float *pfArrPitch, fl
 void AlgorithmTask(void *pvParameters)
 {
     esp_err_t ret;
-    ret = dsps_fft2r_init_fc32(NULL, N >> 1);
+    ESP_LOGW(AIGORITHM_TAG, "Algorithm task begin");
+    ret = dsps_fft2r_init_fc32(NULL, N * 2);
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT2R. Error = %i", ret);
-        return;
+        vTaskDelete(NULL);
     }
-    ret = dsps_fft4r_init_fc32(NULL, N >> 1);
+    ESP_LOGW(AIGORITHM_TAG, "Algorithm fft2r init ");
+    /* 下面这个必须加！ */
+    ret = dsps_fft4r_init_fc32(NULL, N * 4);
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT4R. Error = %i", ret);
-        return;
+        vTaskDelete(NULL);
     }
-    dsps_wind_hann_f32(wind, N);
+    ESP_LOGW(AIGORITHM_TAG, "Algorithm fft4r init ");
+    dsps_wind_hann_f32(wind, N >> 2);
 
+    ESP_LOGW(AIGORITHM_TAG, "Algorithm task suspend !");
     vTaskSuspend(NULL);
+
+
     for (;;)
     {
         ESP_LOGI(AIGORITHM_TAG, "Trigger algorithm detection!");
 
         vTaskSuspend(xTofHandle);
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
         vTaskSuspend(xImuHandle);
 
+        // taskENTER_CRITICAL(&my_spinlock);
         vCopyImuData(usPtrArrImu, &fArrRoll, &fArrPitch, &fArrYaw);
+        // taskEXIT_CRITICAL(&my_spinlock);
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N / 2, 128, 20, -180, 180, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N / 2, 128, 20, -180, 180, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
-        dsps_view(fArrYawFFT, N / 2, 128, 20, -180, 180, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, -45, 45, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
-        // for (int i = 0; i < N; i++)
-        // {
-        //     fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
-        //     fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
-        //     fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
-        // }
+        for (int i = N - (N >> 2); i < N; i++)
+        {
+            fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
+            // fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
+            // fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
+        }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
-        // ESP_LOGW(AIGORITHM_TAG, "Roll wind");
-        // dsps_view(fArrRollFFT, N / 2, 128, 20, -50, 50, '.');
-        // ESP_LOGW(AIGORITHM_TAG, "Pitch wind");
-        // dsps_view(fArrPitchFFT, N / 2, 128, 20, -50, 50, '.');
-        // ESP_LOGW(AIGORITHM_TAG, "Yaw wind");
-        // dsps_view(fArrYawFFT, N / 2, 128, 20, -50, 50, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
+        dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
 
-        dsps_fft2r_fc32(fArrRollFFT, N >> 1);
-        dsps_bit_rev2r_fc32(fArrRollFFT, N >> 1);
-        dsps_cplx2real_fc32(fArrRollFFT, N >> 1);
+        // taskENTER_CRITICAL(&my_spinlock);
+        dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
+        dsps_bit_rev2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
+        dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
+        // taskEXIT_CRITICAL(&my_spinlock);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        // dsps_fft2r_fc32(fArrPitchFFT, N >> 1);
+        // dsps_bit_rev2r_fc32(fArrPitchFFT, N >> 1);
+        // dsps_cplx2real_fc32(fArrPitchFFT, N >> 1);
 
-        dsps_fft2r_fc32(fArrPitchFFT, N >> 1);
-        dsps_bit_rev2r_fc32(fArrPitchFFT, N >> 1);
-        dsps_cplx2real_fc32(fArrPitchFFT, N >> 1);
+        // dsps_fft2r_fc32(fArrYawFFT, N >> 1);
+        // dsps_bit_rev2r_fc32(fArrYawFFT, N >> 1);
+        // dsps_cplx2real_fc32(fArrYawFFT, N >> 1);
 
-        dsps_fft2r_fc32(fArrYawFFT, N >> 1);
-        dsps_bit_rev2r_fc32(fArrYawFFT, N >> 1);
-        dsps_cplx2real_fc32(fArrYawFFT, N >> 1);
-
-        for (uint16_t i = 0; i < N / 2; i++)
+        for (uint16_t i = N - (N >> 2); i < N; i++)
         {
             fArrRollFFT[i] = 10 * log10f((fArrRollFFT[i * 2 + 0] * fArrRollFFT[i * 2 + 0] + fArrRollFFT[i * 2 + 1] * fArrRollFFT[i * 2 + 1] + 0.0000001) / N);
-            fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[i * 2 + 0] * fArrPitchFFT[i * 2 + 0] + fArrPitchFFT[i * 2 + 1] * fArrPitchFFT[i * 2 + 1] + 0.0000001) / N);
-            fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
+            // fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[i * 2 + 0] * fArrPitchFFT[i * 2 + 0] + fArrPitchFFT[i * 2 + 1] * fArrPitchFFT[i * 2 + 1] + 0.0000001) / N);
+            // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
         }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        
 
         ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
-        dsps_view(fArrRollFFT, N / 2, 128, 20, -50, 100, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Pitch FFT");
-        dsps_view(fArrPitchFFT, N / 2, 128, 20, -50, 40, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
-        dsps_view(fArrYawFFT, N / 2, 128, 20, -50, 40, '.');
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 20, -50, 100, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Pitch FFT");
+        // dsps_view(fArrPitchFFT, (N >> 2), 128, 20, -50, 40, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
+        // dsps_view(fArrYawFFT, (N >> 2), 128, 20, -50, 40, '.');
 
-        vTaskResume(xImuHandle);
+
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
         vTaskResume(xTofHandle);
+        vTaskResume(xImuHandle);
         vTaskSuspend(NULL);
     } // end while
 
