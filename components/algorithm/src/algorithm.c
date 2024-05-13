@@ -33,13 +33,14 @@ void vCopyImuData(uint16_t usCurrentPtr, float *pfArrRoll, float *pfArrPitch, fl
 void AlgorithmTask(void *pvParameters)
 {
     esp_err_t ret;
-    ret = dsps_fft2r_init_fc32(NULL, N >> 1);
+    ret = dsps_fft2r_init_fc32(NULL, N * 2);
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT2R. Error = %i", ret);
         return;
     }
-    ret = dsps_fft4r_init_fc32(NULL, N >> 1);
+    /* 下面这个必须加！ */
+    ret = dsps_fft4r_init_fc32(NULL, N * 4);
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT4R. Error = %i", ret);
@@ -47,6 +48,7 @@ void AlgorithmTask(void *pvParameters)
     }
     dsps_wind_hann_f32(wind, N);
 
+    ESP_LOGW(AIGORITHM_TAG, "Algorithm task suspend !");
     vTaskSuspend(NULL);
     for (;;)
     {
@@ -59,11 +61,11 @@ void AlgorithmTask(void *pvParameters)
         vCopyImuData(usPtrArrImu, &fArrRoll, &fArrPitch, &fArrYaw);
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N / 2, 128, 20, -180, 180, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N / 2, 128, 20, -180, 180, '.');
+        dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
-        dsps_view(fArrYawFFT, N / 2, 128, 20, -180, 180, '.');
+        dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
 
         // for (int i = 0; i < N; i++)
         // {
