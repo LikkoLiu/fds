@@ -37,14 +37,14 @@ void AlgorithmTask(void *pvParameters)
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT2R. Error = %i", ret);
-        return;
+        vTaskDelete(NULL);
     }
     /* 下面这个必须加！ */
     ret = dsps_fft4r_init_fc32(NULL, N * 4);
     if (ret != ESP_OK)
     {
         ESP_LOGE(AIGORITHM_TAG, "Not possible to initialize FFT4R. Error = %i", ret);
-        return;
+        vTaskDelete(NULL);
     }
     dsps_wind_hann_f32(wind, N);
 
