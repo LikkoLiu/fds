@@ -42,7 +42,7 @@ void app_main(void)
     ESP_ERROR_CHECK(vBtInit());
 
     xTaskCreate(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 7, NULL);
-    xTaskCreate(&AlgorithmTask, "Algorithm", 1024 * 40, NULL, 10, &xAlgorithmHandle);
+    xTaskCreate(&AlgorithmTask, "Algorithm", 1024 * 48, NULL, 10, &xAlgorithmHandle);
     
     vTaskDelay(800 / portTICK_PERIOD_MS);
     xTaskCreate(&ImuTask, "IMU", 1024 * 15, NULL, 5, &xImuHandle);

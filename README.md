@@ -41,6 +41,24 @@ PC      : 0x40057143  PS      : 0x00060930  A0      : 0x82009c89  A1      : 0x3f
 8. TOF 在热熔胶固定后，发生初始化失败问题
 **Implement**： 热吹风吹了下，怀疑虚焊
 
+9. AlgorithmTask 堆栈设置为 1024 * 64，发生初始化失败问题
+```
+I (11659) i2c-tof: Previous distance:    0 , CurrentmmDetected distance: 2520 
+sudden change in distance from ground!
+
+assert failed: vTaskResume tasks.c:2097 (xTaskToResume)
+
+
+Backtrace: 0x40375ca6:0x3fce3070 0x403810b1:0x3fce3090 0x40388219:0x3fce30b0 0x40382f1e:0x3fce31d0 0x4200d0a5:0x3fce31f0 0x40381be1:0x3fce3240
+0x40375ca6: panic_abort at /home/likko/esp/v5.2.1/esp-idf/components/esp_system/panic.c:472
+0x403810b1: esp_system_abort at /home/likko/esp/v5.2.1/esp-idf/components/esp_system/port/esp_system_chip.c:93
+0x40388219: __assert_func at /home/likko/esp/v5.2.1/esp-idf/components/newlib/assert.c:81
+0x40382f1e: vTaskResume at /home/likko/esp/v5.2.1/esp-idf/components/freertos/FreeRTOS-Kernel/tasks.c:2097 (discriminator 1)
+0x4200d0a5: TofTask at /home/likko/Graduation/fds/components/tof/src/i2c_tof.c:112
+0x40381be1: vPortTaskWrapper at /home/likko/esp/v5.2.1/esp-idf/components/freertos/FreeRTOS-Kernel/portable/xtensa/port.c:134
+```
+**Implement**： 减小为 1024*48
+
 ## Optimization
 1. 蓝牙 GAP 广播间隔修改 MIN：0x0800(1.28Sec) MAX：0x0F00   
 **res**：蓝牙未连接时，功耗由 35mA 降低为 24mA；但蓝牙连接时，功耗为 28mA 
