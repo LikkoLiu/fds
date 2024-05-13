@@ -13,6 +13,7 @@
 #include "driver/uart.h"
 #include "soc/uart_struct.h"
 #include <math.h>
+#include "esp_private/esp_task_wdt.h"
 
 #include "esp_dsp.h"
 

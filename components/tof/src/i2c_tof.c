@@ -104,7 +104,8 @@ void TofTask(void *pvParameters)
 
         if ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD)))
         {
-            ESP_LOGI(I2C_TOF_TAG, "Previous distance: %4d , CurrentmmDetected distance: %4d \nsudden change in distance from ground!", usPreviousRange, range);
+            ESP_LOGW(I2C_TOF_TAG, "Previous distance: %4d , CurrentmmDetected distance: %4d", usPreviousRange, range);
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
             vTaskResume(xAlgorithmHandle);
         }
         ESP_LOGD(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
