@@ -3,15 +3,15 @@
 portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t xAlgorithmHandle = NULL;
 
-__attribute__((aligned(16))) float fArrRoll[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrPitch[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrYaw[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrRoll[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrPitch[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrYaw[N_SAMPLES + 16] = {0};
 uint16_t usPtrArrImu = 0;
 
 int N = N_SAMPLES;
-__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES] = {0};
-__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES + 16] = {0};
 
 __attribute__((aligned(16))) float wind[N_SAMPLES];
 
@@ -55,6 +55,8 @@ void AlgorithmTask(void *pvParameters)
 
     ESP_LOGW(AIGORITHM_TAG, "Algorithm task suspend !");
     vTaskSuspend(NULL);
+
+
     for (;;)
     {
         ESP_LOGI(AIGORITHM_TAG, "Trigger algorithm detection!");
@@ -67,7 +69,7 @@ void AlgorithmTask(void *pvParameters)
         // taskEXIT_CRITICAL(&my_spinlock);
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, -45, 45, '.');
         // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
         // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
         // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");

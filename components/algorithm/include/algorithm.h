@@ -26,9 +26,9 @@
 extern TaskHandle_t xAlgorithmHandle;
 extern portMUX_TYPE my_spinlock;
 
-extern float fArrRoll[N_SAMPLES];
-extern float fArrPitch[N_SAMPLES]; 
-extern float fArrYaw[N_SAMPLES];
+extern float fArrRoll[N_SAMPLES + 16];
+extern float fArrPitch[N_SAMPLES + 16]; 
+extern float fArrYaw[N_SAMPLES + 16];
 extern uint16_t usPtrArrImu;
 
 void AlgorithmTask(void *pvParameters);
