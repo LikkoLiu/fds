@@ -41,10 +41,10 @@ void app_main(void)
     // ESP_ERROR_CHECK(uartgpsdevInit());
     ESP_ERROR_CHECK(vBtInit());
 
-    xTaskCreatePinnedToCore(&AlgorithmTask, "Algorithm", 1024 * 45, NULL, 4, &xAlgorithmHandle, 0);/* 堆栈 48 时，初始化失败 */
-    xTaskCreatePinnedToCore(&SysRunningLedTask, "SysRunningLedTask", 1024 * 2, NULL, 1, NULL, 1);
+    xTaskCreatePinnedToCore(&AlgorithmTask, "Algorithm", 1024 * 80, NULL, 5, &xAlgorithmHandle, 1);/* 堆栈 48 时，初始化失败 */
+    xTaskCreatePinnedToCore(&SysRunningLedTask, "SysRunningLedTask", 1024 * 4, NULL, 1, NULL, 0);
     vTaskDelay(1000 / portTICK_PERIOD_MS);
-    xTaskCreatePinnedToCore(&ImuTask, "IMU", 1024 * 15, NULL, 2, &xImuHandle, 1);
+    xTaskCreatePinnedToCore(&ImuTask, "IMU", 1024 * 15, NULL, 4, &xImuHandle, 1);
     xTaskCreatePinnedToCore(&TofTask, "TOF", 1024 * 12, NULL, 3, &xTofHandle, 1);
     // xTaskCreate(&GpsTask, "GPS", 1024 * 10, NULL, 7, NULL);
 }

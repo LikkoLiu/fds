@@ -21,9 +21,10 @@
 #include "i2c_tof.h"
 
 #define AIGORITHM_TAG "algorithm"
-#define N_SAMPLES 4096 // Amount of real input samples
+#define N_SAMPLES 2048 // Amount of real input samples
 
 extern TaskHandle_t xAlgorithmHandle;
+extern portMUX_TYPE my_spinlock;
 
 extern float fArrRoll[N_SAMPLES];
 extern float fArrPitch[N_SAMPLES]; 

@@ -1,6 +1,6 @@
 #include "algorithm.h"
 
-static portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t xAlgorithmHandle = NULL;
 
 __attribute__((aligned(16))) float fArrRoll[N_SAMPLES] = {0};
@@ -9,14 +9,15 @@ __attribute__((aligned(16))) float fArrYaw[N_SAMPLES] = {0};
 uint16_t usPtrArrImu = 0;
 
 int N = N_SAMPLES;
-__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES];
-__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES];
-__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES];
+__attribute__((aligned(16))) float fArrRollFFT[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrPitchFFT[N_SAMPLES] = {0};
+__attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES] = {0};
 
 __attribute__((aligned(16))) float wind[N_SAMPLES];
 
-void vCopyImuData(uint16_t usCurrentPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
+void vCopyImuData(uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
 {
+    uint16_t usCurrentPtr = usPtr;
     for (uint16_t ucCnt = 0; ucCnt < N_SAMPLES; ucCnt++)
     {
         fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr);
@@ -61,21 +62,25 @@ void AlgorithmTask(void *pvParameters)
         vTaskSuspend(xTofHandle);
         vTaskSuspend(xImuHandle);
 
+        // taskENTER_CRITICAL(&my_spinlock);
         vCopyImuData(usPtrArrImu, &fArrRoll, &fArrPitch, &fArrYaw);
+        // taskEXIT_CRITICAL(&my_spinlock);
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
         dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
-        dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
+        // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
-        for (int i = (N >> 2); i < N; i++)
+        for (int i = N - (N >> 2); i < N; i++)
         {
             fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
             // fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
             // fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
         }
+        vTaskDelay(100 / portTICK_PERIOD_MS);
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
         dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
@@ -84,12 +89,12 @@ void AlgorithmTask(void *pvParameters)
         // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
 
-        taskENTER_CRITICAL(&my_spinlock);
+        // taskENTER_CRITICAL(&my_spinlock);
         dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
         dsps_bit_rev2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
         dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
-        esp_task_wdt_restart();
-
+        // taskEXIT_CRITICAL(&my_spinlock);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
         // dsps_fft2r_fc32(fArrPitchFFT, N >> 1);
         // dsps_bit_rev2r_fc32(fArrPitchFFT, N >> 1);
         // dsps_cplx2real_fc32(fArrPitchFFT, N >> 1);
@@ -104,7 +109,8 @@ void AlgorithmTask(void *pvParameters)
             // fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[i * 2 + 0] * fArrPitchFFT[i * 2 + 0] + fArrPitchFFT[i * 2 + 1] * fArrPitchFFT[i * 2 + 1] + 0.0000001) / N);
             // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
         }
-        taskEXIT_CRITICAL(&my_spinlock);
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+        
 
         ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
         dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 20, -50, 100, '.');
@@ -114,9 +120,9 @@ void AlgorithmTask(void *pvParameters)
         // dsps_view(fArrYawFFT, (N >> 2), 128, 20, -50, 40, '.');
 
 
-
-        vTaskResume(xImuHandle);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
         vTaskResume(xTofHandle);
+        vTaskResume(xImuHandle);
         vTaskSuspend(NULL);
     } // end while
 
