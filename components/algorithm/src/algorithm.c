@@ -62,19 +62,22 @@ void AlgorithmTask(void *pvParameters)
     while (1)
     {
         ESP_LOGW(AIGORITHM_TAG, "Trigger algorithm detection!");
-        ESP_LOGW(AIGORITHM_TAG, "imu task suspend");
+        ESP_LOGW(AIGORITHM_TAG, "Wait for 10s imu data collection to complete");
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
 
         // taskENTER_CRITICAL(&my_spinlock);
         vCopyImuData(usPtrArrImu, &fArrRoll[0], &fArrPitch[0], &fArrYaw[0]);
         // taskEXIT_CRITICAL(&my_spinlock);
         ESP_LOGW(AIGORITHM_TAG, "copy data successfully");
 
+        vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
         dsps_view(fArrRollFFT, N, 128, 30, -90, 90, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
         dsps_view(fArrPitchFFT, N, 128, 30, -90, 90, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
         for (int i = N - (N >> 2); i < N; i++)
