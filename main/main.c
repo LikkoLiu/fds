@@ -16,7 +16,7 @@ void app_main(void)
 
     xTaskCreatePinnedToCore(&SysRunningLedTask, "SysRunningLedTask", 1024 * 4, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(&ImuTask, "IMU", 1024 * 15, NULL, 4, &xImuHandle, 1);
-    xTaskCreatePinnedToCore(&TofTask, "TOF", 1024 * 12, NULL, 3, &xTofHandle, 1);
+    xTaskCreatePinnedToCore(&TofTask, "TOF", 1024 * 12, NULL, 3, &xTofHandle, 0);
 
     do
     {

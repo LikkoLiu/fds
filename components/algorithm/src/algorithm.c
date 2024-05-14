@@ -59,7 +59,7 @@ void AlgorithmTask(void *pvParameters)
     vTaskSuspend(NULL);
 
 
-    for (;;)
+    while (1)
     {
         ESP_LOGW(AIGORITHM_TAG, "Trigger algorithm detection!");
         ESP_LOGW(AIGORITHM_TAG, "imu task suspend");
@@ -70,20 +70,20 @@ void AlgorithmTask(void *pvParameters)
         ESP_LOGW(AIGORITHM_TAG, "copy data successfully");
 
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N, 128, 30, -45, 90, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, -90, 90, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N, 128, 30, -45, 90, '.');
+        dsps_view(fArrPitchFFT, N, 128, 30, -90, 90, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        // for (int i = N - (N >> 2); i < N; i++)
-        // {
-        //     fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
-        //     // fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
-        //     // fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
-        // }
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
+        for (int i = N - (N >> 2); i < N; i++)
+        {
+            fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
+            fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
+            fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
+        }
+        vTaskDelay(50 / portTICK_PERIOD_MS);
 
         // ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
         // dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
