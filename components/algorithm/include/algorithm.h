@@ -25,11 +25,15 @@
 
 #define AIGORITHM_LOG ESP_LOG_DEBUG
 
+#define LOWFREQUENCY 85
+#define MidFREQUENCY 130
+#define HighFREQUENCY 180
+
 extern TaskHandle_t xAlgorithmHandle;
 extern portMUX_TYPE my_spinlock;
 
 extern float fArrRoll[N_SAMPLES + 16];
-extern float fArrPitch[N_SAMPLES + 16]; 
+extern float fArrPitch[N_SAMPLES + 16];
 extern float fArrYaw[N_SAMPLES + 16];
 extern uint16_t usPtrArrImu;
 

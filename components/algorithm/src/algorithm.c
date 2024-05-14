@@ -1,5 +1,8 @@
 #include "algorithm.h"
 
+static uint8_t ucFreDetectFall(float *pfArrRollFre, float *pfArrPitchFre, float *pfArrYawFre);
+uint8_t ucFallProbPara = 0;
+
 portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t xAlgorithmHandle = NULL;
 
@@ -20,8 +23,8 @@ static void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPit
     uint16_t usCurrentPtr = (usPtr + (N_SAMPLES - 256)) % N_SAMPLES; /* 加入偏移，使计算检测触发前后 10s 数据 */
     for (uint16_t ucCnt = 0; ucCnt < N_SAMPLES; ucCnt++)
     {
-        fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr);
-        fArrPitchFFT[ucCnt] = *(pfArrPitch + usCurrentPtr);
+        fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr) + 180; /* 将范围控制在 0：360 */
+        fArrPitchFFT[ucCnt] = *(pfArrPitch + usCurrentPtr) + 180;
         fArrYawFFT[ucCnt] = *(pfArrYaw + usCurrentPtr);
 
         usCurrentPtr++;
@@ -30,13 +33,6 @@ static void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPit
             usCurrentPtr = 0;
         }
     }
-}
-
-static uint8_t ucDetectFall()
-{
-    uint8_t ucProbability = 0;
-
-    return ucProbability;
 }
 
 void AlgorithmTask(void *pvParameters)
@@ -78,9 +74,9 @@ void AlgorithmTask(void *pvParameters)
 
         vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, 0, 360, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
+        dsps_view(fArrPitchFFT, N, 128, 30, 0, 360, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
         vTaskResume(xTofHandle);
@@ -97,9 +93,9 @@ void AlgorithmTask(void *pvParameters)
 
         vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
-        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, -180, 180, '.');
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, -180, 180, '.');
+        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
         vTaskResume(xTofHandle);
@@ -136,11 +132,33 @@ void AlgorithmTask(void *pvParameters)
         dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 3), 128, 30, -75, 75, '.');
         vTaskResume(xTofHandle);
 
+        ucFallProbPara = ucFreDetectFall(&fArrRollFFT[N - (N >> 2)], &fArrPitchFFT[N - (N >> 2)], &fArrYawFFT[N - (N >> 2)]);
         // vTaskDelay(5000 / portTICK_PERIOD_MS);
-        ESP_LOGW(AIGORITHM_TAG, "Algorithm finish !");
+        ESP_LOGW(AIGORITHM_TAG, "Algorithm finish, fall probability is: [%d]", ucFallProbPara);
         vTaskSuspend(NULL);
     } /* end while */
 
     /* Never reach here */
     vTaskDelete(NULL);
+}
+
+static uint8_t ucFreDetectFall(float *pfArrRollFre, float *pfArrPitchFre, float *pfArrYawFre)
+{
+    uint8_t ucProbability = 0;
+    uint8_t ucAddPara = 0;
+
+    ucProbability += (ucAddPara = ((*(pfArrRollFre + HighFREQUENCY) > 10) ? 60 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrPitchFre + HighFREQUENCY) > 10) ? 30 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrYawFre + HighFREQUENCY) > 10) ? 60 : 0));
+
+    ucProbability += (ucAddPara = ((*(pfArrRollFre + MidFREQUENCY) > 20) ? 30 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrPitchFre + MidFREQUENCY) > 20) ? 20 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrYawFre + MidFREQUENCY) > 20) ? 30 : 0));
+    
+    ucProbability += (ucAddPara = ((*(pfArrRollFre + LOWFREQUENCY) > 30) ? 10 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrPitchFre + LOWFREQUENCY) > 30) ? 10 : 0));
+    ucProbability += (ucAddPara = ((*(pfArrYawFre + LOWFREQUENCY) > 30) ? 10 : 0));
+
+    ucProbability = ucProbability - (ucProbability % 100);
+    return ucProbability;
 }
