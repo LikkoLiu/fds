@@ -6,8 +6,8 @@ uint8_t ucFallProbPara = 0;
 portMUX_TYPE my_spinlock = portMUX_INITIALIZER_UNLOCKED;
 TaskHandle_t xAlgorithmHandle = NULL;
 
-__attribute__((aligned(16))) float fArrRoll[N_SAMPLES + 16] = {0};
-__attribute__((aligned(16))) float fArrPitch[N_SAMPLES + 16] = {0};
+__attribute__((aligned(16))) float fArrRoll[N_SAMPLES + 16] = {0}; /* 左右 */
+__attribute__((aligned(16))) float fArrPitch[N_SAMPLES + 16] = {0}; /* 俯仰 */
 __attribute__((aligned(16))) float fArrYaw[N_SAMPLES + 16] = {0};
 uint16_t usPtrArrImu = 0;
 
@@ -20,12 +20,12 @@ __attribute__((aligned(16))) float wind[N_SAMPLES];
 
 static void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
 {
-    uint16_t usCurrentPtr = (usPtr + (N_SAMPLES - 256)) % N_SAMPLES; /* 加入偏移，使计算检测触发前后 10s 数据 */
+    uint16_t usCurrentPtr = (usPtr + (N_SAMPLES - 64)) % N_SAMPLES; /* 加入偏移，使计算检测触发前后 10s 数据 */
     for (uint16_t ucCnt = 0; ucCnt < N_SAMPLES; ucCnt++)
     {
-        fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr) + 180; /* 将范围控制在 0：360 */
-        fArrPitchFFT[ucCnt] = *(pfArrPitch + usCurrentPtr) + 180;
-        fArrYawFFT[ucCnt] = *(pfArrYaw + usCurrentPtr);
+        fArrRollFFT[ucCnt] = *(pfArrRoll + usCurrentPtr); 
+        fArrPitchFFT[ucCnt] = *(pfArrPitch + usCurrentPtr);
+        fArrYawFFT[ucCnt] = *(pfArrYaw + usCurrentPtr); /* 将范围控制在 0：360 */
 
         usCurrentPtr++;
         if (N_SAMPLES == usCurrentPtr)
@@ -74,9 +74,9 @@ void AlgorithmTask(void *pvParameters)
 
         vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        dsps_view(fArrRollFFT, N, 128, 30, 0, 360, '.');
+        dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
         ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(fArrPitchFFT, N, 128, 30, 0, 360, '.');
+        dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
         dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
         vTaskResume(xTofHandle);
@@ -87,16 +87,20 @@ void AlgorithmTask(void *pvParameters)
             fArrRollFFT[i] = fArrRollFFT[i] * wind[usAssignmentCnt];
             fArrPitchFFT[i] = fArrPitchFFT[i] * wind[usAssignmentCnt];
             fArrYawFFT[i] = fArrYawFFT[i] * wind[usAssignmentCnt];
+
+            // fArrRollFFT[i] = fArrRollFFT[i];
+            // fArrPitchFFT[i] = fArrPitchFFT[i];
+            // fArrYawFFT[i] = fArrYawFFT[i];
             usAssignmentCnt++;
         }
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
         vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
-        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
-        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, -180, 180, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Pitch Wind");
+        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, -180, 180, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Yaw Wind");
         dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
@@ -133,7 +137,7 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
 
         ucFallProbPara = ucFreDetectFall(&fArrRollFFT[N - (N >> 2)], &fArrPitchFFT[N - (N >> 2)], &fArrYawFFT[N - (N >> 2)]);
-        // vTaskDelay(5000 / portTICK_PERIOD_MS);
+        char_value[0] = ucFallProbPara;
         ESP_LOGW(AIGORITHM_TAG, "Algorithm finish, fall probability is: [%d]", ucFallProbPara);
         vTaskSuspend(NULL);
     } /* end while */
@@ -147,18 +151,21 @@ static uint8_t ucFreDetectFall(float *pfArrRollFre, float *pfArrPitchFre, float 
     uint8_t ucProbability = 0;
     uint8_t ucAddPara = 0;
 
-    ucProbability += (ucAddPara = ((*(pfArrRollFre + HighFREQUENCY) > 10) ? 60 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrPitchFre + HighFREQUENCY) > 10) ? 30 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrYawFre + HighFREQUENCY) > 10) ? 60 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrRollFre + HighFREQUENCY)) > -5) ? 40 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrPitchFre + HighFREQUENCY)) > -5) ? 80 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrYawFre + HighFREQUENCY)) > -5) ? 40 : 0));
 
-    ucProbability += (ucAddPara = ((*(pfArrRollFre + MidFREQUENCY) > 20) ? 30 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrPitchFre + MidFREQUENCY) > 20) ? 20 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrYawFre + MidFREQUENCY) > 20) ? 30 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrRollFre + MidFREQUENCY)) > 0) ? 20 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrPitchFre + MidFREQUENCY)) > 0) ? 40 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrYawFre + MidFREQUENCY)) > 0) ? 20 : 0));
     
-    ucProbability += (ucAddPara = ((*(pfArrRollFre + LOWFREQUENCY) > 30) ? 10 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrPitchFre + LOWFREQUENCY) > 30) ? 10 : 0));
-    ucProbability += (ucAddPara = ((*(pfArrYawFre + LOWFREQUENCY) > 30) ? 10 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrRollFre + LOWFREQUENCY)) > 10) ? 5 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrPitchFre + LOWFREQUENCY)) > 10) ? 10 : 0));
+    ucProbability += (ucAddPara = (((*(pfArrYawFre + LOWFREQUENCY)) > 10) ? 5 : 0));
 
-    ucProbability = ucProbability - (ucProbability % 100);
+    if ( ucProbability > 100)
+    {
+        ucProbability = ucProbability - (ucProbability % 100);
+    }
     return ucProbability;
 }

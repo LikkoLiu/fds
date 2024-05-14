@@ -19,18 +19,20 @@
 
 #include "i2c_imu.h"
 #include "i2c_tof.h"
+#include "bt.h"
 
 #define AIGORITHM_TAG "algorithm"
 #define N_SAMPLES 2048 // Amount of real input samples
 
 #define AIGORITHM_LOG ESP_LOG_DEBUG
 
-#define LOWFREQUENCY 85
-#define MidFREQUENCY 130
-#define HighFREQUENCY 180
+#define LOWFREQUENCY 5
+#define MidFREQUENCY 96
+#define HighFREQUENCY 176
 
 extern TaskHandle_t xAlgorithmHandle;
 extern portMUX_TYPE my_spinlock;
+extern uint8_t ucFallProbPara;
 
 extern float fArrRoll[N_SAMPLES + 16];
 extern float fArrPitch[N_SAMPLES + 16];

@@ -22,6 +22,7 @@
 #include "sdkconfig.h"
 
 #include "i2c_tof.h"
+#include "algorithm.h"
 
 #define GATTS_TABLE_TAG "GATTS_FDS"
 
@@ -40,6 +41,8 @@
 
 #define ADV_CONFIG_FLAG             (1 << 0)
 #define SCAN_RSP_CONFIG_FLAG        (1 << 1)
+
+extern uint8_t char_value[4];
 
 /* Attributes State Machine */
 enum
