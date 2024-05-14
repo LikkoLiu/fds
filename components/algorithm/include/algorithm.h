@@ -23,6 +23,8 @@
 #define AIGORITHM_TAG "algorithm"
 #define N_SAMPLES 2048 // Amount of real input samples
 
+#define AIGORITHM_LOG ESP_LOG_DEBUG
+
 extern TaskHandle_t xAlgorithmHandle;
 extern portMUX_TYPE my_spinlock;
 

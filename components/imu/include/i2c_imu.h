@@ -42,7 +42,7 @@
 
 #define IMU_SENSOR_ADDR CONFIG_IMU_ADDR /*!< slave address for IMU sensor */
 
-#define I2C_IMU_LOG ESP_LOG_WARN
+#define I2C_IMU_LOG ESP_LOG_INFO
 
 extern TaskHandle_t xImuHandle;
 

@@ -76,6 +76,8 @@ esp_err_t I2cTofInit(void)
 void TofTask(void *pvParameters)
 {
     VL53L1_Error status = VL53L1_ERROR_NONE;
+    TaskHandle_t xAlgorithmTaskHandle;
+    eTaskState xAlgorithmTaskSt;
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
     uint16_t range;
@@ -102,11 +104,15 @@ void TofTask(void *pvParameters)
         VL53L1_StopMeasurement(&dev);
         VL53L1_StartMeasurement(&dev);
 
-        if ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD)))
+        xAlgorithmTaskHandle = xTaskGetHandle("Algorithm");
+        xAlgorithmTaskSt = eTaskGetState(xTaskGetHandle("Algorithm")); /* 获取算法 task 状态 */
+        if ((eSuspended == xAlgorithmTaskSt) && ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD))))
         {
             ESP_LOGW(I2C_TOF_TAG, "Previous distance: %4d , CurrentmmDetected distance: %4d", usPreviousRange, range);
             vTaskDelay(3000 / portTICK_PERIOD_MS);
+            vTaskSuspend(xImuHandle);
             vTaskResume(xAlgorithmHandle);
+            vTaskResume(xImuHandle);
         }
         ESP_LOGD(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
         usPreviousRange = range;

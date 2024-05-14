@@ -530,5 +530,7 @@ esp_err_t vBtInit()
     if (local_mtu_ret){
         ESP_LOGE(GATTS_TABLE_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
+
+    ESP_LOGI(GATTS_TABLE_TAG, "BT init successfully");
     return ret;
 }

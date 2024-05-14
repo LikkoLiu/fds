@@ -201,7 +201,7 @@ esp_err_t I2cImuInit(void)
     esp_err_t err = ESP_OK;
     esp_log_level_set(I2C_IMU_TAG, I2C_IMU_LOG);
 
-    i2cimudevInit();
+    err = i2cimudevInit();
 
     err = bmi160Init();
     ESP_LOGI(I2C_IMU_TAG, "imu initialization %s \r\n", (err == ESP_OK) ? "successfully" : "fail");
@@ -250,7 +250,7 @@ void ImuTask(void *pvParameters)
         vSaveImuData(&task_roll, &task_pitch, &task_yaw);
         ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        vTaskDelay(20 / portTICK_PERIOD_MS);
     } // end while
 
     // Never reach here
