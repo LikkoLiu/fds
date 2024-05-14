@@ -61,11 +61,8 @@ void AlgorithmTask(void *pvParameters)
 
     for (;;)
     {
-        ESP_LOGI(AIGORITHM_TAG, "Trigger algorithm detection!");
-
-        vTaskSuspend(xTofHandle);
-
-        ESP_LOGW(AIGORITHM_TAG, "Tof and imu task suspend");
+        ESP_LOGW(AIGORITHM_TAG, "Trigger algorithm detection!");
+        ESP_LOGW(AIGORITHM_TAG, "imu task suspend");
 
         // taskENTER_CRITICAL(&my_spinlock);
         vCopyImuData(usPtrArrImu, &fArrRoll[0], &fArrPitch[0], &fArrYaw[0]);
@@ -127,8 +124,8 @@ void AlgorithmTask(void *pvParameters)
 
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
-        vTaskResume(xTofHandle);
-        
+        vTaskResume(xImuHandle);
+        ESP_LOGW(AIGORITHM_TAG, "Algorithm finish !");
         vTaskSuspend(NULL);
     } // end while
 

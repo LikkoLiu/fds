@@ -1,7 +1,6 @@
 #include "i2c_tof.h"
 
 #define I2C_TOF_TAG "i2c-tof"
-uint16_t *pusDistancePtr = NULL;
 TaskHandle_t xTofHandle = NULL;
 eTaskState xAlgorithmTaskSt;
 
@@ -79,15 +78,24 @@ void TofTask(void *pvParameters)
     VL53L1_Error status = VL53L1_ERROR_NONE;
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
-    uint16_t range;
+    uint16_t range = 0;
     uint16_t usPreviousRange = 0;
-    pusDistancePtr = &range;
 
     VL53L1_StopMeasurement(&dev);
     VL53L1_SetDistanceMode(&dev, VL53L1_DISTANCEMODE_LONG);
     VL53L1_SetMeasurementTimingBudgetMicroSeconds(&dev, 25000);
 
-    for (;;)
+    VL53L1_StartMeasurement(&dev);
+    while (dataReady == 0)
+    {
+        status = VL53L1_GetMeasurementDataReady(&dev, &dataReady);
+        vTaskDelay(pdMS_TO_TICKS(1));
+    }
+    status = VL53L1_GetRangingMeasurementData(&dev, &rangingData);
+    usPreviousRange = rangingData.RangeMilliMeter;
+    VL53L1_StopMeasurement(&dev);
+
+    while (1)
     {
         VL53L1_StartMeasurement(&dev);
 
@@ -103,19 +111,20 @@ void TofTask(void *pvParameters)
         VL53L1_StopMeasurement(&dev);
         VL53L1_StartMeasurement(&dev);
 
-        xAlgorithmTaskSt = eTaskGetState(xTaskGetHandle("Algorithm")); /* 获取算法 task 状态 */
-        if ((eSuspended == xAlgorithmTaskSt) && ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD))))
+        if ((eSuspended == eTaskGetState(xTaskGetHandle("Algorithm"))) && ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD)))) /* 获取算法 task 状态 */
         {
-            ESP_LOGW(I2C_TOF_TAG, "Previous distance: %4d , CurrentmmDetected distance: %4d", usPreviousRange, range);
+            ESP_LOGW(I2C_TOF_TAG, "Previous detect distance: %4d , Current detect distance: %4d", usPreviousRange, range);
+            usPreviousRange = range;
             vTaskDelay(3000 / portTICK_PERIOD_MS);
             vTaskSuspend(xImuHandle);
             vTaskResume(xAlgorithmHandle);
-            vTaskResume(xImuHandle);
         }
-        ESP_LOGD(I2C_TOF_TAG, "VL53L3CX Distance: %4dmm", range);
-        usPreviousRange = range;
-
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        else
+        {
+            ESP_LOGI(I2C_TOF_TAG, "Current detect distance: %4dmm", range);
+            usPreviousRange = range;
+            vTaskDelay(GET_RANGE_TIME / portTICK_PERIOD_MS);
+        }
     } // end while
 
     // Never reach here
