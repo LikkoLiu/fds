@@ -249,7 +249,7 @@ void ImuTask(void *pvParameters)
         vSaveImuData(&task_roll, &task_pitch, &task_yaw);
         ESP_LOGD(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
-        vTaskDelay(20 / portTICK_PERIOD_MS);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     } /* end while */ 
 
     /* Never reach here */ 
