@@ -116,22 +116,24 @@ void AlgorithmTask(void *pvParameters)
             //     // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
         // }
 
-        /* log10 频率谱 */
-        for (uint16_t i = N - (N >> 2); i < N; i++)
+        /* 功率谱 */
+        for (uint16_t i = (N - (N >> 2)), j = 0; i < (N - (N >> 3)); i++, j++)
         {
-            fArrRollFFT[i] = 10 * log10f(fArrRollFFT[i]); 
-            fArrPitchFFT[i] = 10 * log10f(fArrPitchFFT[i]);
-            fArrYawFFT[i] = 10 * log10f(fArrYawFFT[i]);
+            fArrRollFFT[i] = 10 * log10f((fArrRollFFT[(N - (N >> 2)) + j * 2 + 0] * fArrRollFFT[(N - (N >> 2)) + j * 2 + 0] + fArrRollFFT[(N - (N >> 2)) + j * 2 + 1] * fArrRollFFT[(N - (N >> 2)) + j * 2 + 1] + 0.0000001)); /* 实部和虚部 */
+
+            fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[(N - (N >> 2)) + j * 2 + 0] * fArrPitchFFT[(N - (N >> 2)) + j * 2 + 0] + fArrPitchFFT[(N - (N >> 2)) + j * 2 + 1] * fArrPitchFFT[(N - (N >> 2)) + j * 2 + 1] + 0.0000001));
+            
+            fArrYawFFT[i] = 10 * log10f((fArrYawFFT[(N - (N >> 2)) + j * 2 + 0] * fArrYawFFT[(N - (N >> 2)) + j * 2 + 0] + fArrYawFFT[(N - (N >> 2)) + j * 2 + 1] * fArrYawFFT[(N - (N >> 2)) + j * 2 + 1] + 0.0000001));
         }
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
         vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
         ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
-        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, -75, 75, '.');
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 3), 128, 30, -75, 75, '.'); /* 数组前半部分有效 */
         ESP_LOGW(AIGORITHM_TAG, "Pitch FFT");
-        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, -75, 75, '.');
+        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 3), 128, 30, -75, 75, '.');
         ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
-        dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 2), 128, 30, -75, 75, '.');
+        dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 3), 128, 30, -75, 75, '.');
         vTaskResume(xTofHandle);
 
         // vTaskDelay(5000 / portTICK_PERIOD_MS);
