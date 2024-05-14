@@ -115,10 +115,10 @@ void TofTask(void *pvParameters)
         {
             ESP_LOGW(I2C_TOF_TAG, "Previous detect distance: %4d , Current detect distance: %4d", usPreviousRange, range);
             usPreviousRange = range;
-            
+
             ESP_LOGW(I2C_TOF_TAG, "Wait for 10s imu data collection to complete");
             vTaskDelay(10000 / portTICK_PERIOD_MS);
-            vTaskSuspend(xImuHandle);
+            // vTaskSuspend(xImuHandle);
             vTaskResume(xAlgorithmHandle);
         }
         else

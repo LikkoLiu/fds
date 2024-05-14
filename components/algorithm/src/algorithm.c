@@ -124,7 +124,7 @@ void AlgorithmTask(void *pvParameters)
 
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
-        vTaskResume(xImuHandle);
+        // vTaskResume(xImuHandle);
         ESP_LOGW(AIGORITHM_TAG, "Algorithm finish !");
         vTaskSuspend(NULL);
     } // end while
