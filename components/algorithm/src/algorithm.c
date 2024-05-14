@@ -69,13 +69,13 @@ void AlgorithmTask(void *pvParameters)
         // taskEXIT_CRITICAL(&my_spinlock);
         ESP_LOGW(AIGORITHM_TAG, "copy data successfully");
 
-        // ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
-        // dsps_view(fArrRollFFT, N, 128, 30, -45, 45, '.');
-        // // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        // // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
-        // // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
-        // // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
+        ESP_LOGW(AIGORITHM_TAG, "Roll Raw");
+        dsps_view(fArrRollFFT, N, 128, 30, -45, 90, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        dsps_view(fArrPitchFFT, N, 128, 30, -45, 90, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        vTaskDelay(50 / portTICK_PERIOD_MS);
 
         // for (int i = N - (N >> 2); i < N; i++)
         // {
