@@ -54,7 +54,7 @@ void AlgorithmTask(void *pvParameters)
         vTaskDelete(NULL);
     }
     ESP_LOGD(AIGORITHM_TAG, "Algorithm fft4r init ");
-    dsps_wind_nuttall_f32(wind, N >> 2);
+    dsps_wind_hann_f32(wind, N >> 2);
 
     ESP_LOGI(AIGORITHM_TAG, "Algorithm task suspend !");
     vTaskSuspend(NULL);
@@ -80,8 +80,7 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        usAssignmentCnt = 0;
-        for (int i = N - (N >> 2); i < N; i++)
+        for (int i = N - (N >> 2),usAssignmentCnt = 0; i < N; i++)
         {
             fArrRollFFT[i] = fArrRollFFT[i] * wind[usAssignmentCnt];
             fArrPitchFFT[i] = fArrPitchFFT[i] * wind[usAssignmentCnt];
