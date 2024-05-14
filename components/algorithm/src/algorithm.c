@@ -79,7 +79,7 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        for (uint16_t i = N - (N >> 2),usAssignmentCnt = 0; i < N; i++)
+        for (uint16_t i = N - (N >> 2), usAssignmentCnt = 0; i < N; i++)
         {
             fArrRollFFT[i] = fArrRollFFT[i] * wind[usAssignmentCnt];
             fArrPitchFFT[i] = fArrPitchFFT[i] * wind[usAssignmentCnt];
@@ -99,10 +99,8 @@ void AlgorithmTask(void *pvParameters)
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
         dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 3)); /* 长度必须减半 */
-        vTaskDelay(50 / portTICK_PERIOD_MS);
         dsps_bit_rev2r_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 3));
-        vTaskDelay(50 / portTICK_PERIOD_MS);
-        // dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 2));
+        dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 3));
 
         // // dsps_fft2r_fc32(fArrPitchFFT, N >> 1);
         // // dsps_bit_rev2r_fc32(fArrPitchFFT, N >> 1);
@@ -113,16 +111,16 @@ void AlgorithmTask(void *pvParameters)
         // // dsps_cplx2real_fc32(fArrYawFFT, N >> 1);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        // for (uint16_t i = N - (N >> 2); i < N; i++)
-        // {
-        //     fArrRollFFT[i] = 10 * log10f((fArrRollFFT[i * 2 + 0] * fArrRollFFT[i * 2 + 0] + fArrRollFFT[i * 2 + 1] * fArrRollFFT[i * 2 + 1] + 0.0000001) / N);
-        //     // fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[i * 2 + 0] * fArrPitchFFT[i * 2 + 0] + fArrPitchFFT[i * 2 + 1] * fArrPitchFFT[i * 2 + 1] + 0.0000001) / N);
-        //     // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
-        // }
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
+        for (uint16_t i = N - (N >> 2); i < N; i++)
+        {
+            fArrRollFFT[i] = 10 * log10f((fArrRollFFT[i * 2 + 0] * fArrRollFFT[i * 2 + 0] + fArrRollFFT[i * 2 + 1] * fArrRollFFT[i * 2 + 1] + 0.0000001) / N);
+            //     // fArrPitchFFT[i] = 10 * log10f((fArrPitchFFT[i * 2 + 0] * fArrPitchFFT[i * 2 + 0] + fArrPitchFFT[i * 2 + 1] * fArrPitchFFT[i * 2 + 1] + 0.0000001) / N);
+            //     // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
+        }
+        vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        // ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
-        // dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 20, -50, 100, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, -100, 100, '.');
         // // ESP_LOGW(AIGORITHM_TAG, "Pitch FFT");
         // // dsps_view(fArrPitchFFT, (N >> 2), 128, 20, -50, 40, '.');
         // // ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
