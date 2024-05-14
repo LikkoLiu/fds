@@ -35,6 +35,7 @@ void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, flo
 void AlgorithmTask(void *pvParameters)
 {
     esp_err_t ret;
+    uint16_t usAssignmentCnt = 0;
     esp_log_level_set(AIGORITHM_TAG, AIGORITHM_LOG);
 
     ESP_LOGD(AIGORITHM_TAG, "Algorithm task begin");
@@ -53,11 +54,10 @@ void AlgorithmTask(void *pvParameters)
         vTaskDelete(NULL);
     }
     ESP_LOGD(AIGORITHM_TAG, "Algorithm fft4r init ");
-    dsps_wind_hann_f32(wind, N >> 2);
+    dsps_wind_nuttall_f32(wind, N >> 2);
 
     ESP_LOGI(AIGORITHM_TAG, "Algorithm task suspend !");
     vTaskSuspend(NULL);
-
 
     while (1)
     {
@@ -80,20 +80,25 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
+        usAssignmentCnt = 0;
         for (int i = N - (N >> 2); i < N; i++)
         {
-            fArrRollFFT[i] = fArrRollFFT[i] * wind[i];
-            fArrPitchFFT[i] = fArrPitchFFT[i] * wind[i];
-            fArrYawFFT[i] = fArrYawFFT[i] * wind[i];
+            fArrRollFFT[i] = fArrRollFFT[i] * wind[usAssignmentCnt];
+            fArrPitchFFT[i] = fArrPitchFFT[i] * wind[usAssignmentCnt];
+            fArrYawFFT[i] = fArrYawFFT[i] * wind[usAssignmentCnt];
+            usAssignmentCnt++;
         }
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        // ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
-        // dsps_view(fArrRollFFT, N, 128, 30, -180, 180, '.');
-        // // ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
-        // // dsps_view(fArrPitchFFT, N, 128, 30, -180, 180, '.');
-        // // ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
-        // // dsps_view(fArrYawFFT, N, 128, 30, 0, 360, '.');
+        vTaskSuspend(xTofHandle); /* 画图时挂起 TOF 打印 */
+        ESP_LOGW(AIGORITHM_TAG, "Roll Wind");
+        dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 30, -90, 90, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Pitch Raw");
+        dsps_view(&fArrPitchFFT[N - (N >> 2)], (N >> 2), 128, 30, -90, 90, '.');
+        ESP_LOGW(AIGORITHM_TAG, "Yaw Raw");
+        dsps_view(&fArrYawFFT[N - (N >> 2)], (N >> 2), 128, 30, 0, 360, '.');
+        vTaskResume(xTofHandle);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
 
         // // taskENTER_CRITICAL(&my_spinlock);
         // dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
@@ -116,7 +121,6 @@ void AlgorithmTask(void *pvParameters)
         //     // fArrYawFFT[i] = 10 * log10f((fArrYawFFT[i * 2 + 0] * fArrYawFFT[i * 2 + 0] + fArrYawFFT[i * 2 + 1] * fArrYawFFT[i * 2 + 1] + 0.0000001) / N);
         // }
         // vTaskDelay(100 / portTICK_PERIOD_MS);
-        
 
         // ESP_LOGW(AIGORITHM_TAG, "Roll FFT");
         // dsps_view(&fArrRollFFT[N - (N >> 2)], (N >> 2), 128, 20, -50, 100, '.');
@@ -124,7 +128,6 @@ void AlgorithmTask(void *pvParameters)
         // // dsps_view(fArrPitchFFT, (N >> 2), 128, 20, -50, 40, '.');
         // // ESP_LOGW(AIGORITHM_TAG, "Yaw FFT");
         // // dsps_view(fArrYawFFT, (N >> 2), 128, 20, -50, 40, '.');
-
 
         vTaskDelay(5000 / portTICK_PERIOD_MS);
         // vTaskResume(xImuHandle);
