@@ -35,7 +35,6 @@ void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, flo
 void AlgorithmTask(void *pvParameters)
 {
     esp_err_t ret;
-    uint16_t usAssignmentCnt = 0;
     esp_log_level_set(AIGORITHM_TAG, AIGORITHM_LOG);
 
     ESP_LOGD(AIGORITHM_TAG, "Algorithm task begin");
@@ -80,7 +79,7 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        for (int i = N - (N >> 2),usAssignmentCnt = 0; i < N; i++)
+        for (uint16_t i = N - (N >> 2),usAssignmentCnt = 0; i < N; i++)
         {
             fArrRollFFT[i] = fArrRollFFT[i] * wind[usAssignmentCnt];
             fArrPitchFFT[i] = fArrPitchFFT[i] * wind[usAssignmentCnt];
@@ -99,12 +98,12 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
         vTaskDelay(50 / portTICK_PERIOD_MS);
 
-        // // taskENTER_CRITICAL(&my_spinlock);
-        // dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
-        // dsps_bit_rev2r_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
-        // dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], N >> 2);
-        // // taskEXIT_CRITICAL(&my_spinlock);
-        // vTaskDelay(100 / portTICK_PERIOD_MS);
+        dsps_fft2r_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 3)); /* 长度必须减半 */
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        dsps_bit_rev2r_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 3));
+        vTaskDelay(50 / portTICK_PERIOD_MS);
+        // dsps_cplx2real_fc32(&fArrRollFFT[N - (N >> 2)], (N >> 2));
+
         // // dsps_fft2r_fc32(fArrPitchFFT, N >> 1);
         // // dsps_bit_rev2r_fc32(fArrPitchFFT, N >> 1);
         // // dsps_cplx2real_fc32(fArrPitchFFT, N >> 1);
@@ -112,6 +111,7 @@ void AlgorithmTask(void *pvParameters)
         // // dsps_fft2r_fc32(fArrYawFFT, N >> 1);
         // // dsps_bit_rev2r_fc32(fArrYawFFT, N >> 1);
         // // dsps_cplx2real_fc32(fArrYawFFT, N >> 1);
+        vTaskDelay(50 / portTICK_PERIOD_MS);
 
         // for (uint16_t i = N - (N >> 2); i < N; i++)
         // {
