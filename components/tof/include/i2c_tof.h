@@ -19,6 +19,7 @@
 
 extern uint16_t *pusDistancePtr;
 extern TaskHandle_t xTofHandle;
+extern eTaskState xAlgorithmTaskSt;
 
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);

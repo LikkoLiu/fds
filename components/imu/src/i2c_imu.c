@@ -248,7 +248,7 @@ void ImuTask(void *pvParameters)
         eulerAngles(&task_roll, &task_pitch, &task_yaw);
 
         vSaveImuData(&task_roll, &task_pitch, &task_yaw);
-        ESP_LOGI(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
+        ESP_LOGD(I2C_IMU_TAG, "roll=%f pitch=%f yaw=%f dt=%f", task_roll, task_pitch, task_yaw, dt);
 
         vTaskDelay(20 / portTICK_PERIOD_MS);
     } // end while

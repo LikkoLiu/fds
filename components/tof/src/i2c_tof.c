@@ -3,6 +3,7 @@
 #define I2C_TOF_TAG "i2c-tof"
 uint16_t *pusDistancePtr = NULL;
 TaskHandle_t xTofHandle = NULL;
+eTaskState xAlgorithmTaskSt;
 
 static const I2cDef I2CConfig = {
     .i2cPort = I2C_NUM_1,
@@ -76,8 +77,6 @@ esp_err_t I2cTofInit(void)
 void TofTask(void *pvParameters)
 {
     VL53L1_Error status = VL53L1_ERROR_NONE;
-    TaskHandle_t xAlgorithmTaskHandle;
-    eTaskState xAlgorithmTaskSt;
     VL53L1_RangingMeasurementData_t rangingData;
     uint8_t dataReady = 0;
     uint16_t range;
@@ -104,7 +103,6 @@ void TofTask(void *pvParameters)
         VL53L1_StopMeasurement(&dev);
         VL53L1_StartMeasurement(&dev);
 
-        xAlgorithmTaskHandle = xTaskGetHandle("Algorithm");
         xAlgorithmTaskSt = eTaskGetState(xTaskGetHandle("Algorithm")); /* 获取算法 task 状态 */
         if ((eSuspended == xAlgorithmTaskSt) && ((range > (usPreviousRange + RANGE_THRESHOLD)) || (range < (usPreviousRange - RANGE_THRESHOLD))))
         {
