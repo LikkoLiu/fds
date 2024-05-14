@@ -15,7 +15,7 @@ __attribute__((aligned(16))) float fArrYawFFT[N_SAMPLES + 16] = {0};
 
 __attribute__((aligned(16))) float wind[N_SAMPLES];
 
-void vCopyImuData(uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
+void vCopyImuData(const uint16_t usPtr, float *pfArrRoll, float *pfArrPitch, float *pfArrYaw)
 {
     uint16_t usCurrentPtr = usPtr;
     for (uint16_t ucCnt = 0; ucCnt < N_SAMPLES; ucCnt++)
