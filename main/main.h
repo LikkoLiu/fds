@@ -18,4 +18,7 @@
 #include "bt.h"
 #include "algorithm.h"
 
+#define MAIN_LOG ESP_LOG_INFO
+#define MAIN_TAG "app_main"
+
 #endif

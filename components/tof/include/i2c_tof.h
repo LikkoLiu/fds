@@ -16,9 +16,10 @@
 
 #define I2C_TOF_LOG ESP_LOG_INFO
 #define RANGE_THRESHOLD 500
+#define GET_RANGE_TIME 1000
 
-extern uint16_t *pusDistancePtr;
 extern TaskHandle_t xTofHandle;
+extern eTaskState xAlgorithmTaskSt;
 
 esp_err_t I2cTofInit(void);
 void TofTask(void *pvParameters);

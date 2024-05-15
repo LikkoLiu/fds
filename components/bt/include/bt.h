@@ -22,41 +22,30 @@
 #include "sdkconfig.h"
 
 #include "i2c_tof.h"
+#include "algorithm.h"
 
-#define GATTS_TABLE_TAG "GATTS_FDS"
+#define GATTS_TAG "GATTS_FDS"
 
-#define PROFILE_NUM                 1
-#define PROFILE_APP_IDX             0
-#define ESP_APP_ID                  0x55
-#define DEVICE_NAME                 "GATTS_FDS"
-#define SVC_INST_ID                 0
+#define GATTS_SERVICE_UUID_TEST_A   0x00FF
+#define GATTS_CHAR_UUID_TEST_A      0xFF01
+#define GATTS_DESCR_UUID_TEST_A     0x3333
+#define GATTS_NUM_HANDLE_TEST_A     4
 
-/* The max length of characteristic value. When the GATT client performs a write or prepare write operation,
-*  the data length must be less than GATTS_DEMO_CHAR_VAL_LEN_MAX.
-*/
-#define GATTS_DEMO_CHAR_VAL_LEN_MAX 500
-#define PREPARE_BUF_MAX_SIZE        1024
-#define CHAR_DECLARATION_SIZE       (sizeof(uint8_t))
+#define GATTS_SERVICE_UUID_TEST_B   0x00EE
+#define GATTS_CHAR_UUID_TEST_B      0xEE01
+#define GATTS_DESCR_UUID_TEST_B     0x2222
+#define GATTS_NUM_HANDLE_TEST_B     4
 
-#define ADV_CONFIG_FLAG             (1 << 0)
-#define SCAN_RSP_CONFIG_FLAG        (1 << 1)
+#define DEVICE_NAME            "GATTS_FDS"
+#define TEST_MANUFACTURER_DATA_LEN  17
 
-/* Attributes State Machine */
-enum
-{
-    IDX_SVC,
-    IDX_CHAR_A,
-    IDX_CHAR_VAL_A,
-    IDX_CHAR_CFG_A,
+#define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40
 
-    IDX_CHAR_B,
-    IDX_CHAR_VAL_B,
+#define PREPARE_BUF_MAX_SIZE 1024
 
-    IDX_CHAR_C,
-    IDX_CHAR_VAL_C,
-
-    HRS_IDX_NB,
-};
+#define PROFILE_NUM 2
+#define PROFILE_A_APP_ID 0
+#define PROFILE_B_APP_ID 1
 
 esp_err_t vBtInit();
 
