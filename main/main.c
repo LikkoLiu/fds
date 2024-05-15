@@ -4,6 +4,12 @@ void app_main(void)
 {
     esp_log_level_set(MAIN_TAG, MAIN_LOG);
 
+    esp_pm_config_t pm_config = {
+        .max_freq_mhz = CONFIG_MAX_CPU_FREQ_MHZ,
+        .min_freq_mhz = CONFIG_MIN_CPU_FREQ_MHZ,
+        .light_sleep_enable = false};
+    ESP_ERROR_CHECK(esp_pm_configure(&pm_config));
+
     ESP_ERROR_CHECK(SysRunningLedInit()); /* 初始化 power 控制引脚状态 */
     ESP_ERROR_CHECK(I2cImuInit());
     ESP_ERROR_CHECK(I2cTofInit());

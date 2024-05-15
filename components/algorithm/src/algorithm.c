@@ -137,7 +137,6 @@ void AlgorithmTask(void *pvParameters)
         vTaskResume(xTofHandle);
 
         ucFallProbPara = ucFreDetectFall(&fArrRollFFT[N - (N >> 2)], &fArrPitchFFT[N - (N >> 2)], &fArrYawFFT[N - (N >> 2)]);
-        char_value[0] = ucFallProbPara;
         ESP_LOGW(AIGORITHM_TAG, "Algorithm finish, fall probability is: [%d]", ucFallProbPara);
         vTaskSuspend(NULL);
     } /* end while */
